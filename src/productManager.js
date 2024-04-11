@@ -1,7 +1,7 @@
 import fs from 'fs';
 const DESTINATION_FILE = './products.json';
 
-class ProductManager {
+ export default class ProductManager {
     constructor(){
         
         this.products = [];
@@ -137,21 +137,20 @@ const test = async () => {
         code: 'P002',
         stock: 20
     });
-    console.log('Todos los productos:',await productManager.getProducts());
     
-    console.log('Actualizacion correcta', await productManager.updateProduct(1,{ price: 250}));
+    /* console.log('Actualizacion correcta', await productManager.updateProduct(1,{ price: 250})); */
 
     console.log('Todos los productos:',await productManager.getProducts());
 
     const foundProduct = await productManager.getProductsById(2);
     console.log('Producto encontrado mediante id:',foundProduct);
 
-    const deleteProduct = await productManager.deleteProduct(2);
-    console.log('Producto eliminado', deleteProduct);
+    /* const deleteProduct = await productManager.deleteProduct(2);
+    console.log('Producto eliminado', deleteProduct); */
 
     console.log('Todos los productos:',await productManager.getProducts());
 
-    console.log('Eliminacion del archivo', await productManager.deleteFile());
+    /* console.log('Eliminacion del archivo', await productManager.deleteFile()); */
 }
-test();
-
+/* test();
+ */
