@@ -1,5 +1,5 @@
 import fs from 'fs';
-const DESTINATION_FILE = './products.json';
+const DESTINATION_FILE = './src/products.json';
 
  export default class ProductManager {
     constructor(){
@@ -36,8 +36,8 @@ const DESTINATION_FILE = './products.json';
 
     async getProducts(){
         try {
-            const writeFile =await fs.promises.readFile(DESTINATION_FILE, 'utf-8');
-            const product = JSON.parse(writeFile);
+            const readFile =await fs.promises.readFile(DESTINATION_FILE, 'utf-8');
+            const product = JSON.parse(readFile);
             this.products = product;
             return this.products;
         } catch(error) {
@@ -50,7 +50,7 @@ const DESTINATION_FILE = './products.json';
     getProductsById(id){
         const product = this.products.find ((p)=> p.id === id);
         if(product){
-            console.log(`Producto encontrado: ${product}`);
+            console.log(`Producto encontrado: ${JSON.stringify(product, null, 2)}`);
             return product;
         }else {
             console.log('Error: Producto no encontrado');
