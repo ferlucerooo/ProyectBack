@@ -25,21 +25,22 @@ export default class CartManager {
             this.carts = [];
         }
     }
-
     async getCartById(id) {
-        try{
+        try {
             await this.loadFile();
-            const cart = this.carts.find((c) => c.id === id);
+            const cartId = parseInt(id); 
+            const cart = this.carts.find((c) => c.id === cartId);
             if (cart) {
                 console.log(`Carrito encontrado: ${JSON.stringify(cart, null, 2)}`);
                 return cart;
             } else {
                 console.log('Error: Carrito no encontrado');
+                return null; 
             }
-        }catch(error){
-            console.log('Error al buscar el carrito', error);
+        } catch (error) {
+            console.error('Error al buscar el carrito:', error);
+            throw error; 
         }
-            
     }
 
     async addCart() {
