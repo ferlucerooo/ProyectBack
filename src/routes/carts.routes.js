@@ -3,7 +3,7 @@ import CartManager from '../cartManager.js';
 
 const router = Router ();
 
-const cartManager = new CartManager ('./cart.json');
+const cartManager = new CartManager ('cart.json');
 
 
 router.post('/',async (req,res)=> {
@@ -20,16 +20,20 @@ router.post('/',async (req,res)=> {
 router.get('/:cid', async (req,res)=>{
     try{
         const cid = req.params.cid;
+        console.log(cid);
 
-        const productInCart = await cartManager.getCartById(Number(cid));
+        const productInCart = await cartManager.getCartById((cid));
+
+        console.log(`Contenido del carrito: ${JSON.stringify(productInCart, null, 2)}`);
 
         if(productInCart){
-            console.log('Producto encontrado');
+            console.log('Carrito encontrado');
             res.json({payload: productInCart});
         }else {
-            res.json({payload: console.log('Producto no encontrado')})
+            res.status(404).json({error: 'Carrito no encontrado'})
         }
     }catch(error){
+        console.log('Error al obtener el carrito', error);
         res.status(500).json({ error: error.message });
     }
 });
