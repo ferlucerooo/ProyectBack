@@ -1,0 +1,34 @@
+<div>
+    <h1>CODER Chat</h1>
+    <h2>Ejemplo de cliente Socket.IO</h2>
+
+    <input type="text" id="chat" name="chat" placeholder="Ingresar mensaje" style="width: 300px;">
+    <br />
+    <button onClick="sendMessage()">Enviar</button>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    /*
+    Generamos una instancia del cliente.
+    Como en este caso el servidor Websockets se encuentra en el propio equipo,
+    socket.IO se encargará de conectar.
+    */
+    const socketClient = io();
+    const chat = document.getElementById('chat');
+
+    //escuchamos el mensaje que se envia desde el server
+    socketClient.on('newMessageConfirmation', data => {
+        console.log(data);
+    });
+
+    const sendMessage = () => {
+        if (chat.value !== '') {
+            // Emitimos un mensaje en el tópico newMessage
+            // Como el server se encuentra escuchando este tópico (suscripto),
+            // recibirá el mensaje y ejecutará el callback que hayamos indicado.
+            socketClient.emit('newMessage', chat.value);
+            console.log('Mensaje enviado');
+        }
+    }
+</script>

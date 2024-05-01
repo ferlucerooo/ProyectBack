@@ -1,0 +1,23 @@
+
+    <div>
+        <h1>Lista de productos</h1>
+        {{#if products}}
+            <ul class="list-group">
+                {{#each products}}
+                    <li class="list-group-item">
+                        <h3>{{title}}</h3>
+                        <img src='{{thumbnail}}' alt="{{thumbnail}}">
+                        <p>Precio: {{price}}</p>
+                        <p>Descripcion: {{description}}</p>
+                        <p>Codigo: {{code}}</p>
+                        <p>Stock: {{stock}}</p>
+                        <p>Id: {{id}}</p>
+                        </li>
+                {{/each}}
+            </ul>
+            {{else}}
+            <p>No hay productos disponibles</p>
+        {{/if}}
+
+    </div>
+    
