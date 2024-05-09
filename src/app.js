@@ -54,7 +54,7 @@ socketServer.on('connection',client =>{
     client.on('form_product', (data) => {
         console.log(data);
         products.push(data);
-        socketServer.emit('newProduct',products)
+        socketServer.emit('newProduct',data)
     });
 
 })

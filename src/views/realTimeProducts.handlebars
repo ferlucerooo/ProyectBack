@@ -1,7 +1,7 @@
 <div>
     <h1>Lista de productos</h1>
-    {{#if products}}
-        <ul class="list-group">
+    <ul class="list-group" id="product-list">
+        {{#if products}}
             {{#each products}}
                 <li class="list-group-item">
                     <h3>{{title}}</h3>
@@ -13,12 +13,9 @@
                     <p>Id: {{id}}</p>
                 </li>
             {{/each}}
-        </ul>
         {{else}}
-        <p>No hay productos disponibles</p>
-    {{/if}}
-    <ul id="new_product">
-        
+            <p>No hay productos disponibles</p>
+        {{/if}}
     </ul>
 </div>
 
@@ -41,140 +38,70 @@
     <label for="realTimeStock">Stock: </label>
     <input type="number" name="stock" id="realTimeStock" >
 
-    <button onclick="sendProduct()" id="realTimeButton"> Enviar </button>
-
+    <button id="realTimeButton"> Enviar </button>
 </form>
-
-<form action="delete" id="deleteProduct">
-    <h2>Eliminar producto</h2>
-    <div>
-        <label for="id">Id: </label>
-        <input type="number" name="id" id="id">
-    </div>
-
-</form>
-
 
 <script src="/socket.io/socket.io.js"></script>
-<script >
-
+<script>
     const socketClient = io();
+    let products = []; // Define y maneja correctamente la variable products
 
     // Escuchar el evento 'newProduct' para recibir nuevos productos del servidor
-socketClient.on('newProduct', (newProduct) => {
-    // Renderizar el nuevo producto en la lista
-    renderNewProduct(newProduct);
-});
+    socketClient.on('newProduct', (newProduct) => {
+        // Renderizar el nuevo producto en la lista
+        renderNewProduct(newProduct);
+    });
 
-// Función para renderizar un nuevo producto en la lista
-function renderNewProduct(product) {
-    const productList = document.getElementById('new_product');
-    const listItem = document.createElement('li');
-    listItem.textContent = `${product.title} - ${product.price}`;
-    productList.appendChild(listItem);
-}
-
-// Obtener referencia al botón de enviar
-const button = document.getElementById('realTimeButton');
-
-// Agregar un listener al botón de enviar
-button.addEventListener('click', (e) => {
-    e.preventDefault();
-
-    // Obtener los valores de los campos del formulario
-    const title = document.getElementById('realTimeTitle').value;
-    const thumbnail = document.getElementById('realTimeThumbnail').value;
-    const price = document.getElementById('realTimePrice').value;
-    const description = document.getElementById('realTimeDescription').value;
-    const code = document.getElementById('realTimeCode').value;
-    const stock = document.getElementById('realTimeStock').value;
-
-    // Verificar que todos los campos estén completos
-    if (!title || !thumbnail || !price || !description || !code || !stock) {
-        console.error('Todos los campos son obligatorios');
-        return;
+    // Función para renderizar un nuevo producto en la lista
+    function renderNewProduct(product) {
+        const productList = document.getElementById('product-list');
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.innerHTML = `
+            <h3>${product.title}</h3>
+            <img src='${product.thumbnail}' alt="${product.thumbnail}">
+            <p>Precio: ${product.price}</p>
+            <p>Descripcion: ${product.description}</p>
+            <p>Codigo: ${product.code}</p>
+            <p>Stock: ${product.stock}</p>
+            <p>Id: ${product.id}</p>
+        `;
+        productList.appendChild(listItem);
     }
 
-    // Crear un objeto con la información del producto
-    const product = {
-        title,
-        thumbnail,
-        price,
-        description,
-        code,
-        stock
-    };
+    // Obtener referencia al botón de enviar
+    const button = document.getElementById('realTimeButton');
 
-    // Enviar el producto al servidor
-    socketClient.emit('form_product', product);
-});
+    // Agregar un listener al botón de enviar
+    button.addEventListener('click', (e) => {
+        e.preventDefault();
 
-</script>
+        // Obtener los valores de los campos del formulario
+        const title = document.getElementById('realTimeTitle').value;
+        const thumbnail = document.getElementById('realTimeThumbnail').value;
+        const price = document.getElementById('realTimePrice').value;
+        const description = document.getElementById('realTimeDescription').value;
+        const code = document.getElementById('realTimeCode').value;
+        const stock = document.getElementById('realTimeStock').value;
 
-
-
-
-{{!--  const button = document.getElementById('realTimeButton');
-
-    socketClient.on('new_product', (data)=>{
-        console.log(data);
-
-        const div = document.getElementById('new_product');
-        div.innerHTML = `${data.map((products) => `<li>${products.title} - ${products.price}</li>`)}`;
-        })
-
-    button.addEventListener('click', (e)=>{
-        e.preventDefault()
-
-        const title = document.getElementById('realTimeTitle');
-        const thumbnail = document.getElementById('realTimeThumbnail');
-        const price = document.getElementById('realTimePrice');
-        const description = document.getElementById('realTimeDescription');
-        const code = document.getElementById('realTimeCode');
-        const stock = document.getElementById('realTimeStock');
-
-        const products = {
-            title: title.value,
-            thumbnail: thumbnail.value,
-            price: price.value,
-            description: description.value,
-            code: code.value,
-            stock: stock.value,
+        // Verificar que todos los campos estén completos
+        if (!title || !thumbnail || !price || !description || !code || !stock) {
+            console.error('Todos los campos son obligatorios');
+            return;
         }
-
-        socketClient.emit('form_product', products);
-    }) --}}
-
-
-
-
-
-{{!-- 
-    const sendProduct = () => {
-    const title = document.getElementById('realTimeTitle').value;
-    const thumbnail = document.getElementById('realTimeThumbnail').value;
-    const price = document.getElementById('realTimePrice').value;
-    const description = document.getElementById('realTimeDescription').value;
-    const code = document.getElementById('realTimeCode').value;
-    const stock = document.getElementById('realTimeStock').value;
-
-    // Si todos los campos están completos, enviar el producto al servidor mediante sockets
-    const formData = { title, thumbnail, price, description, code, stock };
-    socketClient.emit('createProduct', formData);
-}; --}}
-    
-    
-    
-    
-
-
-
-   {{!--  // Manejar el evento 'newProduct' cuando se recibe un nuevo producto del servidor
-    socketClient.on('newProduct', (newProduct) => {
-        // Agregar el nuevo producto a la lista de productos
-        products.push(newProduct);
         
-        // Renderizar nuevamente la lista de productos
-        renderProducts(products);
-    })
- --}}
+        // Crear un objeto con la información del producto
+        const product = {
+            title,
+            thumbnail,
+            price,
+            description,
+            code,
+            stock,
+            
+        };
+
+        // Enviar el producto al servidor
+        socketClient.emit('form_product', product);
+    });
+</script>
