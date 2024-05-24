@@ -32,7 +32,7 @@ io.on('connection',async (client) =>{
             await newMessage.save();
             console.log(`Mensaje recibido desde ${client.id}: ${data.user} ${data.message}`);
 
-            io.emit('MessageArrived', newMessage);
+            io.emit('MessageArrived', data);
         }catch(error){
             console.error('Error al guardar el mensaje', error);
         }

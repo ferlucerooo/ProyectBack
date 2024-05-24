@@ -1,49 +1,30 @@
 import { Router } from "express";
-import ProductManager from "../dao/productManager.js";
-import productModel from '../dao/models/products.model.js'
+import config from '../config.js'
+import ProductManagerDB from "../dao/productManager.db.js";
 
 const router = Router ();
+const productManager = ProductManagerDB.getInstance();
 
-//const productManager = new ProductManager('products.json');
+
 
 router.get('/', async (req,res)=>{
-    //coneccion por mongoose y mongodb compass, aca se hace la consulta
     try{
-        const productsDb = await productModel.find().lean();
+        
+        const productsDb = await productManager.getProducts();
 
-        res.status(200).send({payload: productsDb});
+        res.status(200).send({status: 200, payload: productsDb});
         }
     catch (error){
         res.status(500).send('Error al obtener los productos');
     }
     
-    
-    /* try{
-        const products = await productManager.getProducts();
-
-        const limit = req.query.limit;
-        
-        if(limit){
-            res.status(200).send({payload: products.slice(0, parseInt(limit)) });
-
-        }else {
-            res.status(200).send({payload: products});
-
-        };
-
-    } catch (error){
-        console.error('Error al obtener los productos:', error);
-    };
-     */
 });
 
 router.get('/:pid', async (req, res)=> {
 
     try{
         const pid = req.params.pid;
-
-        const product = await productModel.findById(pid);
-        //const product = await productManager.getProductsById(Number(pid));
+        const product = await productManager.getProductById(pid);
 
         if(product){
             console.log('Producto encontrado');
@@ -63,13 +44,12 @@ router.get('/:pid', async (req, res)=> {
 router.post('/', async (req,res)=>{
     try{
         const addProduct = req.body;
-        const newProduct = new productModel(addProduct);
-        const savedProduct = await newProduct.save();
-        //const add = await productManager.addProduct(addProduct);
-        res.status(201).json(savedProduct);
+        const newProduct = await productManager.addProduct(addProduct);
+
+        res.status(201).json(newProduct);
     }catch(error){
         console.log('Error al agregar el producto',(error));
-        res.status(404).send({messag: 'Error al agregar el producto'});
+        res.status(404).send({message: 'Error al agregar el producto'});
     }
     
 })
@@ -78,8 +58,7 @@ router.put('/:pid', async (req,res)=>{
     try{
         const pid = req.params.pid;
         const update = req.body;
-        const options = {new: true}
-        const updatedProduct = await productModel.findByIdAndUpdate(pid, update, options);
+        const updatedProduct = await productManager.updatedProduct(pid, update);
 
         if(updatedProduct){
             res.status(200).send({payload: updatedProduct});
@@ -90,25 +69,7 @@ router.put('/:pid', async (req,res)=>{
         console.log('Error al actualizar el producto', error);
         res.status(500).send({message: 'Producto no encontrado'});
     }
-    /* const filter = {_id: req.params.id};
-    const update = req.body ;
-    const options = {new: true};
 
-    const process = await productModel.findOneAndUpdate(filter, update, options)
-
-    res.status(200).send({payload: process}); */
-    
-/* 
-    try{
-        const pid = req.params.pid;
-        const productUpdate = req.body;
-
-        const productModify = await productManager.updateProduct(pid, productUpdate);
-        res.json({ payload: `Producto con el id ${pid} se modifico con exito`, productModify });
-
-    }catch(error){
-        console.log('Error al actualizar el Producto',(error));
-    } */
 })
 
 
@@ -116,9 +77,8 @@ router.delete('/:pid', async (req,res)=>{
 
     try{
         const pid = req.params.pid;
-        const deleteProduct = await productModel.findByIdAndDelete(pid);
+        const deleteProduct = await productManager.deleteProduct(pid);
 
-        //const deleteP = await productManager.deleteProduct(pid);
 
         if(deleteProduct){
             res.json({payload: deleteProduct})

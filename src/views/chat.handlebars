@@ -48,6 +48,7 @@
 
     socketClient.on('messageArrived', data =>{
         chatList.innerHTML += ` <br /> [${data.user}]: ${data.message}`;
+        console.log('mensaje desde chat',data);
         
     })
 
