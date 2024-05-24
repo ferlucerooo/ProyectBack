@@ -1,12 +1,24 @@
 import { Router } from "express";
-import ProductManager from "../productManager.js";
+import ProductManager from "../dao/productManager.js";
+import productModel from '../dao/models/products.model.js'
 
 const router = Router ();
 
-const productManager = new ProductManager('products.json');
+//const productManager = new ProductManager('products.json');
 
 router.get('/', async (req,res)=>{
+    //coneccion por mongoose y mongodb compass, aca se hace la consulta
     try{
+        const productsDb = await productModel.find().lean();
+
+        res.status(200).send({payload: productsDb});
+        }
+    catch (error){
+        res.status(500).send('Error al obtener los productos');
+    }
+    
+    
+    /* try{
         const products = await productManager.getProducts();
 
         const limit = req.query.limit;
@@ -22,25 +34,28 @@ router.get('/', async (req,res)=>{
     } catch (error){
         console.error('Error al obtener los productos:', error);
     };
-    
+     */
 });
 
 router.get('/:pid', async (req, res)=> {
+
     try{
         const pid = req.params.pid;
 
-        const product = await productManager.getProductsById(Number(pid));
+        const product = await productModel.findById(pid);
+        //const product = await productManager.getProductsById(Number(pid));
 
         if(product){
             console.log('Producto encontrado');
             res.json({payload: product});
 
         }else{
-            res.json({payload: console.log('Producto no encontrado')});
+            res.json({message: 'Producto no encontrado'});
 
         }
     }catch(error){
         console.log('Error al pedir el id',(error));
+        res.status(404).send({messag: 'Producto no encontrado'});
     }
 
 });
@@ -48,16 +63,42 @@ router.get('/:pid', async (req, res)=> {
 router.post('/', async (req,res)=>{
     try{
         const addProduct = req.body;
-        
-        const add = await productManager.addProduct(addProduct);
-        res.json(add);
+        const newProduct = new productModel(addProduct);
+        const savedProduct = await newProduct.save();
+        //const add = await productManager.addProduct(addProduct);
+        res.status(201).json(savedProduct);
     }catch(error){
         console.log('Error al agregar el producto',(error));
+        res.status(404).send({messag: 'Error al agregar el producto'});
     }
     
 })
 
 router.put('/:pid', async (req,res)=>{
+    try{
+        const pid = req.params.pid;
+        const update = req.body;
+        const options = {new: true}
+        const updatedProduct = await productModel.findByIdAndUpdate(pid, update, options);
+
+        if(updatedProduct){
+            res.status(200).send({payload: updatedProduct});
+        }else{
+            res.status(404).send({message: 'Producto no encontrado'});
+        }
+    }catch(error){
+        console.log('Error al actualizar el producto', error);
+        res.status(500).send({message: 'Producto no encontrado'});
+    }
+    /* const filter = {_id: req.params.id};
+    const update = req.body ;
+    const options = {new: true};
+
+    const process = await productModel.findOneAndUpdate(filter, update, options)
+
+    res.status(200).send({payload: process}); */
+    
+/* 
     try{
         const pid = req.params.pid;
         const productUpdate = req.body;
@@ -67,54 +108,29 @@ router.put('/:pid', async (req,res)=>{
 
     }catch(error){
         console.log('Error al actualizar el Producto',(error));
-    }
+    } */
 })
 
 
 router.delete('/:pid', async (req,res)=>{
+
     try{
         const pid = req.params.pid;
+        const deleteProduct = await productModel.findByIdAndDelete(pid);
 
-        const deleteP = await productManager.deleteProduct(pid);
+        //const deleteP = await productManager.deleteProduct(pid);
 
-        if(deleteP){
-            res.json({payload: deleteP})
+        if(deleteProduct){
+            res.json({payload: deleteProduct})
             console.log('Producto encontrado y eliminado');
         }else {
-            res.json({payload: console.log('Producto que intenta eliminar no encontrado')})
+            res.status(404).send({message: 'Producto no encontrado'});
         }
     }catch(error){
-        console.log('',(error));                                                                                                                                                                        
+        console.log('Error al eliminar el producto',(error)); 
+        res.status(500).send({messag: 'Error al eliminar el producto'});                                                                                                                                                                       
     }
 })
-
-
-
-
-/* app.post('/',uploader.single('thumbnail'),(req,res)=>{
-    console.log(req.file);
-    console.log(req.body);
-
-
-    // res.status(200).send({payload: req.body});
-
-
-    const {email ='', password = ''}= req.body;
-    if(body.password.length <8){
-        res.status(400).send({payload: [], error: 'Pw minimo de 8 caracteres'})
-    } else{
-        res.status(200).send({payload: body});
-    }
-}) */
-
-/* app.delete('/:uid',(req,res)=>{
-    const id= req.params.uid;
-    res.status(200).send({payload: `Quiere borrar el registro ${id}`})
-}) */
-
-
-
-
 
 
 export default router;

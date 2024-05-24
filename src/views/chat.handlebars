@@ -2,33 +2,90 @@
     <h1>CODER Chat</h1>
     <h2>Ejemplo de cliente Socket.IO</h2>
 
-    <input type="text" id="chat" name="chat" placeholder="Ingresar mensaje" style="width: 300px;">
+    <div>
+        <input type="text" id="chat" placeholder="Ingresar mensaje" style="width: 300px;">
     <br />
-    <button onClick="sendMessage()">Enviar</button>
+    <button class="btn btn-success mt-3" id="sendButton" onClick="sendMessage()">Enviar</button>
+    </div>
+    <div>
+        <p id="chatList"></p>
+    </div>
+    
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
-<script>
-    /*
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+<script >
+
+ /*
     Generamos una instancia del cliente.
     Como en este caso el servidor Websockets se encuentra en el propio equipo,
     socket.IO se encargará de conectar.
     */
     const socketClient = io();
     const chat = document.getElementById('chat');
+    const chatList = document.getElementById('chatList');
+    const sendButton = document.getElementById('sendButton');
+
+    let user;
 
     //escuchamos el mensaje que se envia desde el server
     socketClient.on('newMessageConfirmation', data => {
         console.log(data);
     });
 
+    socketClient.on('chatLog', data =>{
+
+        chatList.innerHTML = '';
+            data.reverse().forEach(msg => {
+                chatList.innerHTML += `<br /> [${msg.user}]: ${msg.message}`;
+            });
+
+        //for( let i = 0; i < data.length; i++){
+          //  chatList.innerHTML += `<br /> [${data[i].user}]: ${data[i].message} `;
+        //}
+    })
+
+    socketClient.on('messageArrived', data =>{
+        chatList.innerHTML += ` <br /> [${data.user}]: ${data.message}`;
+        
+    })
+
     const sendMessage = () => {
         if (chat.value !== '') {
             // Emitimos un mensaje en el tópico newMessage
             // Como el server se encuentra escuchando este tópico (suscripto),
             // recibirá el mensaje y ejecutará el callback que hayamos indicado.
-            socketClient.emit('newMessage', chat.value);
+            socketClient.emit('newMessage',  {user: user, message: chat.value});
             console.log('Mensaje enviado');
+            chat.value = '';
+            
         }
     }
+
+    const askForUser = async () => {
+        const {value: username } = await Swal.fire({
+            title: 'Coderhouse',
+            input: 'text',
+            text: 'Usuario',
+            inputValidator: value => { return !value && 'Se debe indicar usuario' },
+            allowOutsideClick: false
+        })
+        user = username;
+        //.then(result =>{
+          //  user = result.value;
+       // });
+        //return result.value;
+
+    };
+     chat.addEventListener('keyup', (evt) => {
+        if (evt.key === 'Enter'){
+            sendMessage()
+        } 
+    });
+
+     sendButton.addEventListener('click', (evt) => {
+        sendMessage();
+    });
+    askForUser();
 </script>

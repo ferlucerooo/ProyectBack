@@ -1,5 +1,6 @@
 import {Router} from 'express';
-import ProductManager from '../productManager.js';
+import ProductManager from '../dao/productManager.js';
+
 
 const router = Router ();
 const productManager = new ProductManager('products.json');
@@ -10,11 +11,6 @@ router.get('/bienvenida', (req,res)=>{
     }
     res.render('index',user )
 })
-
-router.get('/chat', (req,res)=>{
-    res.render('chat', {});
-})
-
 
 router.get('/home', async (req,res)=>{
     try{
