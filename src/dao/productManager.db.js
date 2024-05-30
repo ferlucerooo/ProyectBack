@@ -13,7 +13,7 @@ class ProductManagerDB {
         return ProductManagerDB.#instance;
     }
 
-    async getProducts(limit){
+    /* async getProducts(limit){
         try{
             this.products = await productModel.find().limit(limit).lean();
             if(!this.products){
@@ -23,7 +23,36 @@ class ProductManagerDB {
         }catch(error){
             throw error;
         }
+    } */
+    async getProducts(limit = 10, page = 1, sort = null, query = {}, category = {}) {
+        try {
+            const options = {
+                limit: limit,
+                page: page,
+                lean: true,
+            };
+    
+            if (sort) {
+                options.sort = { price: sort };
+            }
+    
+            const queryObj = {
+                ...query,
+                ...category // Incorporamos el filtro por categoría en la consulta
+            };
+    
+            const products = await productModel.paginate(queryObj, options);
+    
+            if (!products) {
+                throw new Error('No se encontraron productos');
+            }
+    
+            return products;
+        } catch (error) {
+            throw error;
+        }
     }
+
 async getProductById(id){
     try{
         const product = await productModel.findById(id).lean();

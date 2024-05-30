@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 
-const collection = 'carts';
 mongoose.pluralize(null);
+const collection = 'carts';
+
 
 const Schema = new mongoose.Schema({
     products:{
