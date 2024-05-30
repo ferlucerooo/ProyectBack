@@ -9,19 +9,6 @@ const productManager = ProductManagerDB.getInstance();
 
 router.get('/', async (req,res)=>{
     try{
-        //const productsDb = await productManager.getProducts().find({role:'premium'}).lean();
-        //const productsDb = await productManager.getProducts().find().skip().limit(8).lean();
-        //const productsDb = await productManager.getProducts().find().skip(8).limit(8).lean();
-        //const productsDb = await productManager.getProducts().paginate();
-        /* const productsDb = await productManager.getProducts().paginate({
-            gender:'Female' o req.params.type ,{ limit:5, page: 1  }
-        }); */
-       /*  .agregate([
-            {$match: {stock:  req.params.type }},
-            {$group:{_id: '$price', totalPrice: {$sum: '$price'}}},
-            {$sort: {totalPrice: -1}}          //-1 descendente, 1 ascendente
-        ]); */
-        /* const productsDb = await productManager.getProducts().paginate({limit: req.params.type}, {limit:5, page:6}).sort({}); */
         const limit = parseInt(req.query.limit) || 5;
         const page = parseInt(req.query.page) || 1;
         const sort = req.query.sort === 'asc' ? 1 : req.query.sort === 'des' ? -1 : null;

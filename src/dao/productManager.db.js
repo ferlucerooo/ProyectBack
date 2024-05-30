@@ -13,18 +13,7 @@ class ProductManagerDB {
         return ProductManagerDB.#instance;
     }
 
-    /* async getProducts(limit){
-        try{
-            this.products = await productModel.find().limit(limit).lean();
-            if(!this.products){
-                throw new Error ('No se encontraron productos');
-            }
-            return this.products;
-        }catch(error){
-            throw error;
-        }
-    } */
-    async getProducts(limit = 10, page = 1, sort = null, query = {}, category = {}) {
+    async getProducts(limit = 5, page = 1, sort = null, query = {}, category = {}) {
         try {
             const options = {
                 limit: limit,

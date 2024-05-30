@@ -68,8 +68,28 @@ router.delete('/:cid', async (req, res) => {
 });
 
 router.put('/:cid',async (req,res)=>{
-
+    try{
+        const {cid} = req.params;
+        const products = req.body.products;
+        const cart = await cartManager.updatedCart(cid, products);
+        res.json({status: 'succes', payload: cart})
+    } catch (error) {
+        console.log('Error al actualizar el carrito', error);
+        res.status(500).json({ error: error.message });
+    }
 });
+
+router.put('/:cid/product/:pid', async (req,res)=>{
+    try{
+        const {cid, pid} = req.params;
+        const {quantity} = req.body;
+        const cart = await cartManager.updateProdQuantity(cid, pid, quantity);
+        res.json({status: 'succes', payload: cart});
+    } catch (error){
+        console.log('Error al actualizar la cantidad del producto en el carrito', error);
+        res.status(500).json({error: error.message});
+    }
+})
 
 
 export default router;
