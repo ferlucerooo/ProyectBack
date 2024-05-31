@@ -5,7 +5,17 @@ import ProductManagerDB from "../dao/productManager.db.js";
 const router = Router ();
 const productManager = ProductManagerDB.getInstance();
 
+router.get('/products', async (req,res)=>{
+    try{
+        const products = await productManager.getProducts();
+        console.log(products);
+        res.render('products', {products: products.docs});
 
+    }  catch (error) {
+        console.error('Error al obtener los productos:', error);
+        res.status(500).send('Error al obtener los productos. Por favor, inténtalo de nuevo más tarde.');
+    }
+});
 
 router.get('/', async (req,res)=>{
     try{
@@ -24,6 +34,7 @@ router.get('/', async (req,res)=>{
     }
     
 });
+
 
 
 

@@ -5,12 +5,13 @@
             {{#each products}}
                 <li class="list-group-item">
                     <h3>{{title}}</h3>
-                    <img src='{{thumbnail}}' alt="{{thumbnail}}">
+                    <img src="{{thumbnail}}" alt="{{thumbnail}}">
                     <p>Precio: {{price}}</p>
-                    <p>Descripcion: {{description}}</p>
-                    <p>Codigo: {{code}}</p>
+                    <p>Descripción: {{description}}</p>
+                    <p>Código: {{code}}</p>
+                    <p>Categoría: {{category}}</p>
                     <p>Stock: {{stock}}</p>
-                    <p>Id: {{id}}</p>
+                    <p>ID: {{_id}}</p>
                 </li>
             {{/each}}
         {{else}}

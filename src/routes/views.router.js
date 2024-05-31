@@ -1,9 +1,11 @@
 import {Router} from 'express';
+import ProductManagerDB from '../dao/productManager.db.js';
 import ProductManager from '../dao/productManager.js';
 
 
 const router = Router ();
 const productManager = new ProductManager('products.json');
+const productManagerdb = ProductManagerDB.getInstance();
 
 router.get('/bienvenida', (req,res)=>{
     const user ={
@@ -31,6 +33,11 @@ router.get('/realtimeproducts', async (req,res)=>{
         console.error('Error al obtener los productos:', error);
     };
 })
+
+
+
+
+
 router.post('/realtimeproducts', async (req,res)=>{
     try{
         const socketServer = req.app.get('socketServer');
