@@ -1,0 +1,22 @@
+<div>
+    <h1>Productos en el Carrito</h1>
+    <ul class="list-group" id="cart-products">
+        {{#if cart}}
+            {{#each cart}}
+                <li class="list-group-item">
+                    <h3>{{this.productId.title}}</h3>
+                    <img src="{{this.productId.thumbnail}}" alt="{{this.productId.title}}">
+                    <p>Precio: {{this.productId.price}}</p>
+                    <p>Descripción: {{this.productId.description}}</p>
+                    <p>Código: {{this.productId.code}}</p>
+                    <p>Categoría: {{this.productId.category}}</p>
+                    <p>Stock: {{this.productId.stock}}</p>
+                    <p>ID: {{this.productId._id}}</p>
+                    <p>Cantidad: {{this.quantity}}</p>
+                </li>
+            {{/each}}
+        {{else}}
+            <p>No hay productos en el carrito</p>
+        {{/if}}
+    </ul>
+</div>

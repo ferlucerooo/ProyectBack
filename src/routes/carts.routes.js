@@ -15,6 +15,27 @@ router.post('/',async (req,res)=> {
         res.status(500).json({error: error.message});
     }
 });
+// ruta para view
+router.get('/carts/:cid', async (req,res)=>{
+    try{
+        const cid = req.params.cid;
+        console.log(cid);
+
+        const cart = await cartManager.getCartById((cid));
+        console.log('Cart:', JSON.stringify(cart, null, 2));
+
+        if(!cart){
+            return res.status(404).send('Carrito no encontrado');
+        }
+        res.render('cart', { cart: cart.products });
+    }catch(error){
+        console.log('Error al obtener el carrito', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+
 
 router.get('/:cid', async (req,res)=>{
     try{

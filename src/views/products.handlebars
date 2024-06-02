@@ -12,10 +12,35 @@
                     <p>Categoría: {{category}}</p>
                     <p>Stock: {{stock}}</p>
                     <p>ID: {{_id}}</p>
+                    <button onclick="addToCart('{{_id}}')">Agregar al carrito</button>
                 </li>
             {{/each}}
         {{else}}
             <p>No hay productos disponibles</p>
         {{/if}}
     </ul>
+
+    <!-- Paginación -->
+    <div>
+        {{#if hasPrevPage}}
+            <a href="/api/products/products?page={{prevPage}}&limit={{limit}}">Página Anterior</a>
+        {{else}}
+            <p>No hay página anterior</p>
+        {{/if}}
+        {{#if hasNextPage}}
+            <a href="/api/products/products?page={{nextPage}}&limit={{limit}}">Página Siguiente</a>
+        {{else}}
+            <p>No hay página siguiente</p>
+        {{/if}}
+    </div>
 </div>
+
+<script>
+    function addToCart(productId) {
+        const cartId = 'ID_DEL_CARRITO_AQUI'; // Reemplaza con el ID real del carrito
+        fetch(`/api/carts/${cartId}/product/${productId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => console.error('Error:', error));
+    }
+</script>

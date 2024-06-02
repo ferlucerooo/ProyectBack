@@ -7,9 +7,25 @@ const productManager = ProductManagerDB.getInstance();
 
 router.get('/products', async (req,res)=>{
     try{
-        const products = await productManager.getProducts();
-        console.log(products);
-        res.render('products', {products: products.docs});
+        const limit = parseInt(req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
+        const sort = req.query.sort === 'asc' ? 1 : req.query.sort === 'des' ? -1 : null;
+        const query = req.query.query ? JSON.parse(req.query.query) : {}; // Consulta adicional
+        const category = req.query.category ? { category: req.query.category } : {}; // Filtro por categoría
+    
+
+        const result = await productManager.getProducts(limit, page, sort, query,category);
+        console.log(result);
+        res.render('products', {
+            products: result.docs,
+            totalPages: result.totalPages,
+            currentPage: result.page,
+            hasPrevPage: result.hasPrevPage,
+            hasNextPage: result.hasNextPage,
+            prevPage: result.prevPage,
+            nextPage: result.nextPage,
+            limit: limit
+        });
 
     }  catch (error) {
         console.error('Error al obtener los productos:', error);

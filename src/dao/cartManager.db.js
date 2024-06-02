@@ -19,7 +19,7 @@ class CartManagerDB{
             if(id.length !== 24){
                 throw new Error('el id debe tener 24 caracteres');
             }
-            const cart = await cartModel.findOne({_id: id});
+            const cart = await cartModel.findOne({_id: id}).populate('products.productId').lean();
 
             if(!cart){
                 throw new Error(`No se encontro el carrito con el id ${id}`);

@@ -41,7 +41,6 @@ class ProductManagerDB {
             throw error;
         }
     }
-
 async getProductById(id){
     try{
         const product = await productModel.findById(id).lean();
