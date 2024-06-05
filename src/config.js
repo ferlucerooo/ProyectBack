@@ -9,7 +9,8 @@ const config = {
     get UPLOAD_DIR() { return `${this.DIRNAME}/public/img` },
     //MONGODB_URI: 'mongodb://localhost:27017/coder-53160'
     MONGODB_URI: 'mongodb+srv://ferlucero:coder1234@clustercoder.7pwbewf.mongodb.net/coder-53160',
-    MONGODB_ID_REGEX: /^[a-fA-F0-9]{24}$/
+    MONGODB_ID_REGEX: /^[a-fA-F0-9]{24}$/,
+    SECRET: 'coder-53160-secret'
 }
 
 export default config;

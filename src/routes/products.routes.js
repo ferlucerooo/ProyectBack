@@ -17,6 +17,7 @@ router.get('/products', async (req,res)=>{
         const result = await productManager.getProducts(limit, page, sort, query,category);
         console.log(result);
         res.render('products', {
+            user: req.session.user,
             products: result.docs,
             totalPages: result.totalPages,
             currentPage: result.page,

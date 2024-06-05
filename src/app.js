@@ -1,31 +1,42 @@
 import express from 'express';
 import handlebars from 'express-handlebars';
 import config from './config.js';
+import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import initSocket from './socket.js';
+import FileStore from 'session-file-store';
+import MongoStore from 'connect-mongo';
+
+
+
 import productsRoutes from './routes/products.routes.js';
 import cartsRoutes from './routes/carts.routes.js';
 import viewsRoutes from './routes/views.router.js';
 import chatRouter from './routes/chat.router.js';
-import initSocket from './socket.js'
-import mongoose from 'mongoose';
+import cookiesRouter from './routes/cookies.routes.js';
+import sessionRouter from './routes/sessions.routes.js'
+
 
 const app = express ();
-
-
-
-// Puerto donde escucha el servidor 
-const expressInstance = app.listen(config.PORT, async ()=>{
-    //instanciamos el mongoose y que bbdd es a la que nos conectamos
-    await mongoose.connect(config.MONGODB_URI);
-    
-    const socketServer = initSocket(expressInstance);
-
-// El método set() nos permite setear objetos globales para nuestra app.
-// En este caso lo aprovechamos para socketServer, que luego recuperaremos
-// desde los endpoints donde necesitemos publicar mensajes Websockets.
-app.set('socketServer', socketServer);
+const fileStorage = FileStore(session);
 
     app.use(express.json());             // con esto express es capas de entender la solicitud tipo post con body(json)
-    app.use(express.json({extended: true}));
+    app.use(express.urlencoded({ extended: true })); 
+   /*  app.use(express.json({extended: true})); */
+
+    app.use(cookieParser(config.SECRET));
+    app.use(session({
+       /*  store: MongoStore.create({
+            mongoUrl: config.MONGODB_URI,
+            ttl: 15 //segundos time to live
+        }), */
+        store: new fileStorage ({path: './sessions', ttl:100, retries:0}),
+        secret:config.SECRET,
+        resave: true,
+        saveUninitialized: true
+    }))
+
 // motor de plantillas
     app.engine('handlebars', handlebars.engine());
     app.set('views', `${config.DIRNAME}/views`);
@@ -36,6 +47,19 @@ app.set('socketServer', socketServer);
     app.use('/chat',chatRouter);
     app.use('/static', express.static(`${config.DIRNAME}/public`));
     app.use('/',viewsRoutes)
+    app.use('/api/cookies',cookiesRouter);
+    app.use('/api/sessions',sessionRouter);
+
+
+    // Puerto donde escucha el servidor 
+    const expressInstance = app.listen(config.PORT, async ()=>{
+    //instanciamos el mongoose y que bbdd es a la que nos conectamos
+    await mongoose.connect(config.MONGODB_URI);
+    
+    const socketServer = initSocket(expressInstance);
+
+    app.set('socketServer', socketServer);
+    
 
     console.log(`Servidor Express activo en el puerto ${config.PORT} enlazada a bbdd`);
 });

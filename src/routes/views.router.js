@@ -54,7 +54,32 @@ router.post('/realtimeproducts', async (req,res)=>{
     }catch(error){
         console.error('Error al agregar el producto:',error);
     }
-})
+});
+
+
+
+
+//login 
+
+//falta esto
+router.get('/register', (req, res) => {
+    res.render('register', {});
+});
+
+router.get('/login', (req, res) => {
+    // Si hay datos de sesión activos, redireccionamos al perfil
+    console.log(req.session.user);
+    if (req.session.user){
+        return res.redirect('/api/products/products')
+    } 
+    res.render('login', {});
+});
+
+router.get('/profile', (req, res) => {
+    // Si NO hay datos de sesión activos, redireccionamos al login
+    /* if (!req.session.user) return res.redirect('/login'); */
+    res.render('profile', { user: req.session.user });
+});
 
 
 export default router;

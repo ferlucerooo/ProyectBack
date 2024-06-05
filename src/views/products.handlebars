@@ -1,5 +1,36 @@
+<style>
+    body {
+        background-color: #333;
+    }
+
+    .login-container {
+        max-width: 360px;
+        margin: auto;
+        margin-top: 64px;
+        padding: 32px;
+        border-radius: 0.5em;
+        color: #333;
+        border: 1px solid #bbb;
+        background-color: #ccc;
+    }
+
+    .a2 {
+        color: #333;
+    }
+
+    .a2:hover {
+        color: #000;
+    }
+
+</style>
+
+
 <div>
     <h1>Lista de productos</h1>
+    <h3>Bienvenido, {{user.firstName}} {{user.lastName}} ({{user.role}})</h3>
+    <form action="/api/sessions/logout" method="get">
+    <button type="submit" class="btn btn-success">Salir</button>
+</form>
     <ul class="list-group" id="product-list">
         {{#if products}}
             {{#each products}}
