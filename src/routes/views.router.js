@@ -66,6 +66,7 @@ router.get('/register', (req, res) => {
     res.render('register', {});
 });
 
+
 router.get('/login', (req, res) => {
     // Si hay datos de sesión activos, redireccionamos al perfil
     console.log(req.session.user);

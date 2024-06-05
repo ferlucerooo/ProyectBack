@@ -5,6 +5,15 @@ import config from "../config.js";
 const router = Router ();
 
 
+const users = [
+    {
+        firstName: 'José',
+        lastName: 'Perez',
+        email: 'idux.net@gmail.com',
+        password: 'abc123',
+        role: 'admin'
+    }
+];
 
 const adminAuth = (req, res, next) => {
     if (req.session.user.role !== 'admin') return res.status(401).send({ origin: config.SERVER, payload: 'Acceso no autorizado: se requiere nivel de admin' });
@@ -49,18 +58,14 @@ router.post('/login', async (req, res) => {
         console.log('Email recibido:', email);
         console.log('Password recibido:', password);
         
+        const user = users.find(user => user.email === email && user.password === password);
 
-        const savedFirstName = 'José';
-        const savedLastName = 'Perez';
-        const savedEmail = 'idux.net@gmail.com';
-        const savedPassword = 'abc123';
-        const savedRole = 'admin';
-
-        if (email !== savedEmail || password !== savedPassword) {
+        if (!user) {
             return res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
         }
         
-        req.session.user = { firstName: savedFirstName, lastName: savedLastName, email: email, role: savedRole };
+        req.session.user = { firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role };
+        
         /* console.log(req.session.user); */
         /* res.status(200).send({ origin: config.SERVER, payload: 'Bienvenido!' }); */
         // res.redirect nos permite redireccionar a una plantilla en lugar de devolver un mensaje
@@ -84,6 +89,43 @@ router.get('/logout', async (req, res) => {
     }
 });
 
+router.post('/register', (req, res) => {
+    try {
+        const { firstName, lastName, email, gender, password } = req.body;
+        console.log('Datos recibidos para registro:', req.body);
+
+        // Validar que todos los campos estén presentes
+        if (!firstName || !lastName || !email || !gender || !password) {
+            console.error('Todos los campos son obligatorios.');
+            return res.render('register', { msg: 'Todos los campos son obligatorios' });
+        }
+
+        // Comprobar si el email ya está registrado
+        const existingUser = users.find(user => user.email === email);
+        if (existingUser) {
+            console.error('El email ya está registrado:', email);
+            return res.render('register', { msg: 'El email ya está registrado' });
+        }
+
+        // Crear nuevo usuario y agregarlo a la "base de datos"
+        const newUser = { firstName, lastName, email, gender, password, role: 'usuario' };
+        users.push(newUser);
+
+        console.log('Usuario registrado exitosamente:', newUser);
+
+        // Iniciar sesión del usuario automáticamente después del registro
+        req.session.user = { firstName, lastName, email, role: 'usuario' };
+
+        // Redirigir a la vista de productos
+        res.redirect('/api/products/products');
+    } catch (error) {
+        console.error('Error al registrar el usuario:', error);
+        res.status(500).send('Error al registrar el usuario. Por favor, inténtalo de nuevo más tarde.');
+    }
+});
+
+
+console.log(users);
 
 
 export default router;
