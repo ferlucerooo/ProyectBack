@@ -4,18 +4,22 @@ import config from './config.js';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import passport from 'passport';
 import initSocket from './socket.js';
 import FileStore from 'session-file-store';
-import MongoStore from 'connect-mongo';
+
+/* import MongoStore from 'connect-mongo'; */
 
 
 
 import productsRoutes from './routes/products.routes.js';
 import cartsRoutes from './routes/carts.routes.js';
 import viewsRoutes from './routes/views.router.js';
+import usersRouter from './routes/users.routes.js';
 import chatRouter from './routes/chat.router.js';
 import cookiesRouter from './routes/cookies.routes.js';
 import sessionRouter from './routes/sessions.routes.js'
+
 
 
 const app = express ();
@@ -37,6 +41,8 @@ const fileStorage = FileStore(session);
         saveUninitialized: true
     }))
 
+    app.use(passport.initialize());
+    app.use(passport.session());
 // motor de plantillas
     app.engine('handlebars', handlebars.engine());
     app.set('views', `${config.DIRNAME}/views`);
@@ -47,6 +53,7 @@ const fileStorage = FileStore(session);
     app.use('/chat',chatRouter);
     app.use('/static', express.static(`${config.DIRNAME}/public`));
     app.use('/',viewsRoutes)
+    app.use('/api/users', usersRouter);
     app.use('/api/cookies',cookiesRouter);
     app.use('/api/sessions',sessionRouter);
 

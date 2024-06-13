@@ -21,6 +21,10 @@
     .a2:hover {
         color: #000;
     }
+
+    .submit_btn {
+        width: 160px;
+    }
 </style>
 
 
@@ -28,22 +32,31 @@
     <h1><b>CODERStore</b></h1>
     <h2><b>Login de usuario</b></h2>
 
-    <form action="/api/sessions/login" method="post" style="margin-top: 32px;">
-    <div class="input-group" style="width: 300px; margin-bottom: 32px;">
-        <span class="input-group-text" id="group1"><i class="fa-solid fa-user"></i></span>
-        <input type="email" name="email" class="form-control" placeholder="Email" required="required" autofocus="autofocus">
-    </div>
+    <form action="/api/sessions/pplogin" method="post" style="margin-top: 32px;">
+        <div class="input-group" style="width: 300px; margin-bottom: 32px;">
+            <span class="input-group-text" id="group1"><i class="fa-solid fa-user"></i></span>
+            <input type="email" name="email" class="form-control" placeholder="Nombre" required="required" autofocus="autofocus">
+        </div>
 
-    <div class="input-group" style="width: 300px; margin-bottom: 32px;">
-        <span class="input-group-text" id="group2"><i class="fa-solid fa-lock"></i></span>
-        <input type="password" name="password" class="form-control" required="required">
-    </div>
+        <div class="input-group" style="width: 300px; margin-bottom: 32px;">
+            <span class="input-group-text" id="group2"><i class="fa-solid fa-lock"></i></span>
+            <input type="password" name="password" class="form-control" required="required">
+        </div>
 
-    <button type="submit" class="btn btn-success">Ingresar</button>
+        {{#if showError}}
+            <div class="alert alert-danger" role="alert" style="margin-top: 16px;">
+                {{ errorMessage }}
+            </div>
+        {{/if}}
 
-    <div style="margin-top: 24px;">
-        No tenés cuenta?: <a class="a2" href="/register">Registrate</a>
-    </div>
-</form>
+        <div style="margin-top: 24px;">
+            <button type="submit" class="btn btn-success submit_btn">Ingresar</button>
+            <br /><br />
+            <button class="btn btn-info submit_btn" onclick="window.location.replace('/api/sessions/ghlogin')">Github</button>
+        </div>
 
+        <div style="margin-top: 24px;">
+            No tenés cuenta?: <a class="a2" href="/register">Registrate</a>
+        </div>
+    </form>
 </div>

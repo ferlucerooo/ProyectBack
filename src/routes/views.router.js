@@ -78,8 +78,12 @@ router.get('/login', (req, res) => {
 
 router.get('/profile', (req, res) => {
     // Si NO hay datos de sesión activos, redireccionamos al login
-    /* if (!req.session.user) return res.redirect('/login'); */
-    res.render('profile', { user: req.session.user });
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+
+        console.log('User data in session:', req.session.user);
+    res.render('profile', { user: req.session.user});
 });
 
 
