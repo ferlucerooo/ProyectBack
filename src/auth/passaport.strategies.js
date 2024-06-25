@@ -2,11 +2,23 @@ import passport from 'passport';
 import local from 'passport-local';
 import GitHubStrategy from 'passport-github2'
 import UsersManager from '../dao/usersManager.db.js';
+import jwt from 'passport-jwt';
+
 import config from '../config.js';
 import { isValidPassword } from '../utils.js';
 
+const jwtStrategy = jwt.Strategy;
+const jwtExtractor = jwt.ExtractJwt;
+
 const localStrategy = local.Strategy;
 const manager = new UsersManager();
+
+const cookieExtractor = (req) => {
+    let token = null;
+    if (req && req.cookies) token = req.cookies[`${config.APP_NAME}_cookie`];
+    
+    return token;
+}
 
 const initAuthStrategies = () => {
     passport.use('login', new localStrategy(
@@ -89,6 +101,22 @@ const initAuthStrategies = () => {
         }
     ));
 
+    // Estrategia para verificación de token vía cookie
+    passport.use('jwtlogin', new jwtStrategy(
+        {
+            // Aquí llamamos al extractor de cookie
+            jwtFromRequest: jwtExtractor.fromExtractors([cookieExtractor]),
+            secretOrKey: config.SECRET
+        },
+        async (jwt_payload, done) => {
+            try {
+                return done(null, jwt_payload);
+            } catch (err) {
+                return done(err);
+            }
+        }
+    ));
+
     passport.serializeUser((user, done) => {
         done(null, user);
     });
@@ -97,5 +125,18 @@ const initAuthStrategies = () => {
         done(null, user);
     });
 }
+
+export const passportCall = strategy => {
+    return async (req, res, next) => {
+        passport.authenticate(strategy, { session: false }, function (err, user, info) {
+            if (err) return next(err);
+            // if (!user) return res.status(401).send({ origin: config.SERVER, payload: null, error: info.messages ? info.messages : info.toString() });
+            if (!user) return res.status(401).send({ origin: config.SERVER, payload: null, error: 'Usuario no autenticado' });
+
+            req.user = user;
+            next();
+        })(req, res, next);
+    }
+};
 
 export default initAuthStrategies;

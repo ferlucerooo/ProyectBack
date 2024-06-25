@@ -1,8 +1,8 @@
 import { Router } from "express";
 import config from "../config.js";
-import { isValidPassword, verifyRequiredBody, createHash } from "../utils.js";
+import { isValidPassword, verifyRequiredBody, createHash, createToken, verifyToken } from "../utils.js";
 import passport from "passport";
-import initAuthStrategies from "../auth/passaport.strategies.js";
+import initAuthStrategies, { passportCall }  from "../auth/passaport.strategies.js";
 import usersManager from '../dao/usersManager.db.js'
 
 
@@ -12,23 +12,20 @@ const manager = new usersManager ();
 initAuthStrategies();
 
 
-/* const users = [
-    {
-        firstName: 'José',
-        lastName: 'Perez',
-        email: 'idux.net@gmail.com',
-        password: 'abc123',
-        role: 'admin'
-    }
-]; */
-
 const adminAuth = (req, res, next) => {
     if (req.session.user.role !== 'admin') return res.status(403).send({ origin: config.SERVER, payload: 'Acceso no autorizado: se requiere nivel de admin' });
 
     next();
 }
 
-
+const verifyAuthorization = role => {
+    return async (req, res, next) => {
+        if (!req.user) return res.status(401).send({ origin: config.SERVER, payload: 'Usuario no autenticado' });
+        if (req.user.role !== role) return res.status(403).send({ origin: config.SERVER, payload: 'No tiene permisos para acceder al recurso' });
+        
+        next();
+    }
+}
 
 
 router.get('/counter', async (req, res) => {
@@ -54,6 +51,10 @@ router.get('/private', adminAuth, async (req, res) => {
     }
 });
 
+// Endpoint temporal para hashear claves de prueba
+router.get('/hash/:password', async (req, res) => {
+    res.status(200).send({ origin: config.SERVER, payload: createHash(req.params.password) });
+});
 
 router.post('/register', verifyRequiredBody(['firstName', 'lastName', 'email', 'password']), async (req, res) => {
     try {
@@ -73,40 +74,6 @@ router.post('/register', verifyRequiredBody(['firstName', 'lastName', 'email', '
     }
 });
 
-/* router.post('/register', verifyRequiredBody(['firstName', 'lastName', 'email', 'password']), (req, res) => {
-    try {
-        const { firstName, lastName, email, gender, password } = req.body;
-        console.log('Datos recibidos para registro:', req.body);
-
-        // Validar que todos los campos estén presentes
-        if (!firstName || !lastName || !email || !gender || !password) {
-            console.error('Todos los campos son obligatorios.');
-            return res.render('register', { msg: 'Todos los campos son obligatorios' });
-        }
-
-        // Comprobar si el email ya está registrado
-        const existingUser = users.find(user => user.email === email);
-        if (existingUser) {
-            console.error('El email ya está registrado:', email);
-            return res.render('register', { msg: 'El email ya está registrado' });
-        }
-
-        // Crear nuevo usuario y agregarlo a la "base de datos"
-        const newUser = { firstName, lastName, email, gender, password, role: 'usuario' };
-        users.push(newUser);
-
-        console.log('Usuario registrado exitosamente:', newUser);
-
-        // Iniciar sesión del usuario automáticamente después del registro
-        req.session.user = { firstName, lastName, email, role: 'usuario' };
-
-        // Redirigir a la vista de productos
-        res.redirect('/api/products/products');
-    } catch (error) {
-        console.error('Error al registrar el usuario:', error);
-        res.status(500).send('Error al registrar el usuario. Por favor, inténtalo de nuevo más tarde.');
-    }
-}); */
 
 // login
 router.post('/login',verifyRequiredBody(['email', 'password']), async (req, res) => {
@@ -131,39 +98,6 @@ router.post('/login',verifyRequiredBody(['email', 'password']), async (req, res)
 } catch (err) {
     res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
 }
-
-
-    /* try {
-        const { email, password } = req.body;
-        const user = users.find(user => user.email === email && isValidPassword(password, user.password));
-
-        if (!user) {
-            return res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
-        }
-
-        req.session.user = { firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role };
-        res.redirect('/api/products/products');
-    } catch (err) {
-        res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
-    } */
-
-/*     try {
-        
-        const { email, password } = req.body;
-        
-        const user = users.find(user => user.email === email && user.password === password);
-
-        if (!user) {
-            return res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
-        }
-        
-        req.session.user = { firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role };
-        
-        
-        res.redirect('/api/products/products')
-    } catch (err) {
-        res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
-    } */
 });
 
 
@@ -181,6 +115,24 @@ router.post('/pplogin', verifyRequiredBody(['email', 'password']), passport.auth
         res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
     }
 });
+
+// Endpoint autenticación con Passport contra base de datos propia y jwt
+router.post('/jwtlogin', verifyRequiredBody(['email', 'password']), passport.authenticate('login', { failureRedirect: `/login?error=${encodeURI('Usuario o clave no válidos')}`}), async (req, res) => {
+    try {
+        // Passport inyecta los datos del done en req.user
+        // Creamos un token (una nueva credencial) para enviarle al usuario
+        const token = createToken(req.user, '1h');
+        // Notificamos al navegador para que almacene el token en una cookie
+        res.cookie(`${config.APP_NAME}_cookie`, token, { maxAge: 60 * 60 * 1000, httpOnly: true });
+        res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' });
+        // También podemos retornar el token en la respuesta, en este caso el cliente tendrá
+        // que almacenar manualmente el token.
+        // res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado', token: token });
+    } catch (err) {
+        res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+    }
+});
+
 // login github que se encarga de redireccionar 
 router.get('/ghlogin', passport.authenticate('ghlogin', {scope: ['user']}), async (req, res) => {
 });
@@ -188,12 +140,6 @@ router.get('/ghlogin', passport.authenticate('ghlogin', {scope: ['user']}), asyn
 //login github
 router.get('/ghlogincallback', passport.authenticate('ghlogin', {failureRedirect: `/login?error=${encodeURI('Error al identificar con Github')}`}), async (req, res) => {
     try {
-        /* req.session.user = req.user // req.user es inyectado AUTOMATICAMENTE por Passport al parsear el done()
-        req.session.save(err => {
-            if (err) return res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
-        
-            res.redirect('/profile');
-        }); */
         if (req.user) {
             req.session.user = req.user;
             req.session.login_type = 'GitHub';
@@ -224,7 +170,21 @@ router.get('/logout', async (req, res) => {
     }
 });
 
-/* console.log(users); */
-
+// Ejemplo autenticación y autorización manual de admin
+router.get('/admin', verifyToken, verifyAuthorization('admin'), async (req, res) => {
+    try {
+        res.status(200).send({ origin: config.SERVER, payload: 'Bienvenido ADMIN!' });
+    } catch (err) {
+        res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+    }
+});
+//Ejemplo autenticación y autorización de admin vía Passport
+router.get('/ppadmin', passportCall('jwtlogin'), verifyAuthorization('admin'), async (req, res) => {
+    try {
+        res.status(200).send({ origin: config.SERVER, payload: 'Bienvenido ADMIN!' });
+    } catch (err) {
+        res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+    }
+});
 
 export default router;

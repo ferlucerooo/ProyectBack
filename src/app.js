@@ -18,7 +18,7 @@ import viewsRoutes from './routes/views.router.js';
 import usersRouter from './routes/users.routes.js';
 import chatRouter from './routes/chat.router.js';
 import cookiesRouter from './routes/cookies.routes.js';
-import sessionRouter from './routes/sessions.routes.js'
+import authRouter from './routes/auth.routes.js'
 
 
 
@@ -35,7 +35,7 @@ const fileStorage = FileStore(session);
             mongoUrl: config.MONGODB_URI,
             ttl: 15 //segundos time to live
         }), */
-        store: new fileStorage ({path: './sessions', ttl:100, retries:0}),
+        store: new fileStorage ({path: './auth', ttl:100, retries:0}),
         secret:config.SECRET,
         resave: true,
         saveUninitialized: true
@@ -55,7 +55,7 @@ const fileStorage = FileStore(session);
     app.use('/',viewsRoutes)
     app.use('/api/users', usersRouter);
     app.use('/api/cookies',cookiesRouter);
-    app.use('/api/sessions',sessionRouter);
+    app.use('/api/auth',authRouter);
 
 
     // Puerto donde escucha el servidor 
