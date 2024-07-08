@@ -5,6 +5,14 @@ import ProductManagerDB from "../dao/productManager.db.js";
 const router = Router ();
 const productManager = ProductManagerDB.getInstance();
 
+router.param('id', async (req, res, next, id) => {
+    if (!config.MONGODB_ID_REGEX.test(req.params.id)) {
+        return res.status(400).send({ origin: config.SERVER, payload: null, error: 'Id no válido' });
+    }
+
+    next();
+})
+
 router.get('/products', async (req,res)=>{
     try{
         const limit = parseInt(req.query.limit) || 5;
@@ -73,6 +81,7 @@ router.get('/:pid', async (req, res)=> {
     try{
         const pid = req.params.pid;
         const product = await productManager.getProductById(pid);
+        //const product = await productManager.getProductById(req.params.id);
 
         if(product){
             console.log('Producto encontrado');
@@ -139,5 +148,8 @@ router.delete('/:pid', async (req,res)=>{
     }
 })
 
+router.all('*', async (req, res) => {
+    res.status(404).send({ origin: config.SERVER, payload: null, error: 'No se encuentra la ruta solicitada' }); 
+});
 
 export default router;

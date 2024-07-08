@@ -27,6 +27,10 @@ const verifyAuthorization = role => {
     }
 }
 
+const handlePolicies = policies => {
+    return async (req, res, next) => {
+    }
+}
 
 router.get('/counter', async (req, res) => {
     try {

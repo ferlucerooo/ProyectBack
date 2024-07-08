@@ -7,6 +7,8 @@ import session from 'express-session';
 import passport from 'passport';
 import initSocket from './socket.js';
 import FileStore from 'session-file-store';
+import cors from 'cors';
+
 
 /* import MongoStore from 'connect-mongo'; */
 
@@ -19,12 +21,15 @@ import usersRouter from './routes/users.routes.js';
 import chatRouter from './routes/chat.router.js';
 import cookiesRouter from './routes/cookies.routes.js';
 import authRouter from './routes/auth.routes.js'
-
+import TestRouter from './routes/test.router.js';
 
 
 const app = express ();
 const fileStorage = FileStore(session);
 
+    app.use(cors({
+        origin: '*'
+    }));
     app.use(express.json());             // con esto express es capas de entender la solicitud tipo post con body(json)
     app.use(express.urlencoded({ extended: true })); 
    /*  app.use(express.json({extended: true})); */
@@ -56,6 +61,7 @@ const fileStorage = FileStore(session);
     app.use('/api/users', usersRouter);
     app.use('/api/cookies',cookiesRouter);
     app.use('/api/auth',authRouter);
+    app.use('/api/test', new TestRouter().getRouter());
 
 
     // Puerto donde escucha el servidor 
