@@ -1,11 +1,11 @@
 import passport from 'passport';
 import local from 'passport-local';
 import GitHubStrategy from 'passport-github2'
-import UsersManager from '../dao/usersManager.db.js';
+import UsersManager from '../controllers/usersManager.db.js';
 import jwt from 'passport-jwt';
 
-import config from '../config.js';
-import { isValidPassword } from '../utils.js';
+import config from '../services/config.js';
+import { isValidPassword } from '../services/utils.js';
 
 const jwtStrategy = jwt.Strategy;
 const jwtExtractor = jwt.ExtractJwt;

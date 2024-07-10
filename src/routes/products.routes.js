@@ -1,6 +1,6 @@
 import { Router } from "express";
-import config from '../config.js'
-import ProductManagerDB from "../dao/productManager.db.js";
+import config from '../services/config.js'
+import ProductManagerDB from "../controllers/productManager.db.js";
 
 const router = Router ();
 const productManager = ProductManagerDB.getInstance();

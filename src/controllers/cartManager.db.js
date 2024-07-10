@@ -1,5 +1,5 @@
-import cartModel from "./models/cart.model.js";
-import ProductManagerDB from "./productManager.db.js";
+import cartModel from "../dao/models/cart.model.js";
+import ProductManagerDB from "../dao/models/products.model.js";
 
 class CartManagerDB{
     static #instace;

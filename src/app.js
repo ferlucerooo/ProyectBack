@@ -1,11 +1,11 @@
 import express from 'express';
 import handlebars from 'express-handlebars';
-import config from './config.js';
+import config from './services/config.js';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import passport from 'passport';
-import initSocket from './socket.js';
+import initSocket from './services/socket.js';
 import FileStore from 'session-file-store';
 import cors from 'cors';
 

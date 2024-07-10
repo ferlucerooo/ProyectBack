@@ -1,9 +1,9 @@
 import { Router } from "express";
-import config from "../config.js";
-import { isValidPassword, verifyRequiredBody, createHash, createToken, verifyToken } from "../utils.js";
+import config from "../services/config.js";
+import { isValidPassword, verifyRequiredBody, createHash, createToken, verifyToken } from "../services/utils.js";
 import passport from "passport";
 import initAuthStrategies, { passportCall }  from "../auth/passaport.strategies.js";
-import usersManager from '../dao/usersManager.db.js'
+import usersManager from '../controllers/usersManager.db.js'
 
 
 const router = Router ();

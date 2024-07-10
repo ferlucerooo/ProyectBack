@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import config from '../config.js';
-import UsersManager from '../dao/usersManager.db.js';
+import config from '../services/config.js';
+import UsersManager from '../controllers/usersManager.db.js';
 
 const router = Router();
 const manager = new UsersManager();
