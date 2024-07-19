@@ -1,5 +1,6 @@
 import { Router } from "express";
 import CartManagerDB from "../controllers/cartManager.db.js";
+import { handlePolicies } from "../services/utils.js";
 
 const router = Router ();
 
@@ -33,9 +34,6 @@ router.get('/carts/:cid', async (req,res)=>{
         res.status(500).json({ error: error.message });
     }
 });
-
-
-
 
 router.get('/:cid', async (req,res)=>{
     try{
@@ -88,7 +86,7 @@ router.delete('/:cid', async (req, res) => {
     }
 });
 
-router.put('/:cid',async (req,res)=>{
+router.put('/:cid', async (req,res)=>{
     try{
         const {cid} = req.params;
         const products = req.body.products;
@@ -112,5 +110,16 @@ router.put('/:cid/product/:pid', async (req,res)=>{
     }
 })
 
+router.post('/:cid/purchase', handlePolicies('user'), async (req, res) => {
+    const cartId = req.params.cid;
+    const purchaserEmail = req.user.email; 
+
+    try {
+        const result = await cartManager.purchaseCart(cartId, purchaserEmail);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
 
 export default router;

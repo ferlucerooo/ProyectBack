@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import config from './config.js';
+import config from '../config.js';
 
 export const createHash = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10));
 
@@ -35,3 +35,39 @@ export const verifyRequiredBody = (requiredFields) => {
       next();
     };
 };
+
+
+export const verifyAllowedBody = (allowedFields) => {
+    return (req, res, next) => {
+        req.body = allowedFields.reduce((filteredBody, key) => {
+            if (req.body.hasOwnProperty(key) && req.body[key] !== '') filteredBody[key] = req.body[key];
+            return filteredBody;
+          }, {});
+        
+        next();
+    };
+};
+
+export const verifyMongoDBId = (id) => {
+    return (req, res, next) => {
+        if (!config.MONGODB_ID_REGEX.test(req.params.id)) {
+            return res.status(400).send({ origin: config.SERVER, payload: null, error: 'Id no válido' });
+        }
+    
+        next();
+    }
+}
+
+export const verifyDbConn = (req, res, next) => {
+    MongoSingleton.getInstance();
+    next();
+}
+
+export const handlePolicies = policies => {
+    return async (req, res, next) => {
+        console.log(req.user);
+        if (!req.user) return res.status(401).send({ origin: config.SERVER, payload: 'Usuario no autenticado' });
+        if (policies.includes(req.user.role)) return next();
+        res.status(403).send({ origin: config.SERVER, payload: 'No tiene permisos para acceder al recurso' });
+    }
+}

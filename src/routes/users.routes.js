@@ -1,23 +1,11 @@
 import { Router } from 'express';
 
-import config from '../services/config.js';
+import config from '../config.js';
 import UsersManager from '../controllers/usersManager.db.js';
 
 const router = Router();
 const manager = new UsersManager();
 
-/**
- * Aggregate nos permite ejecutar varios procesos en una misma consulta.
- * Muy útil cuando necesitamos generar estadísticas o calcular totales
- * sobre las consultas, es decir, no retornar los datos de la colección
- * tal cual se encuentran almacenados, sino realizar cálculos sobre esos
- * datos en la propia consulta.
- * 
- * En este ejemplo, efectuamos 3 procesos (stages):
- * 1- Filtrado por rol.
- * 2- Agrupamiento y cálculo de suma total de grades por región (ver modelo).
- * 3- Ordenamiento por total de grades descendente (-1).
- */
 router.get('/aggregate/:role', async (req, res) => {
     try {
         if (req.params.role === 'admin' || req.params.role === 'premium' || req.params.role === 'user') {
@@ -78,6 +66,20 @@ router.delete('/:id', async (req, res) => {
         res.status(200).send({ origin: config.SERVER, payload: process });
     } catch (err) {
         res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+    }
+});
+
+router.get('/current', async (req, res) => {
+    try {
+        const userId = { _id: req.params.id }; // Asumiendo que tienes el ID del usuario en `req.user.id`
+        const user = await manager.getById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 

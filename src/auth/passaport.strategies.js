@@ -4,13 +4,15 @@ import GitHubStrategy from 'passport-github2'
 import UsersManager from '../controllers/usersManager.db.js';
 import jwt from 'passport-jwt';
 
-import config from '../services/config.js';
+import config from '../config.js';
 import { isValidPassword } from '../services/utils.js';
+
+
+const localStrategy = local.Strategy;
 
 const jwtStrategy = jwt.Strategy;
 const jwtExtractor = jwt.ExtractJwt;
 
-const localStrategy = local.Strategy;
 const manager = new UsersManager();
 
 const cookieExtractor = (req) => {
@@ -39,7 +41,7 @@ const initAuthStrategies = () => {
         }
     ));
 
-    passport.use('ghlogin', new GitHubStrategy(
+   /*  passport.use('ghlogin', new GitHubStrategy(
         {
             clientID: config.GITHUB_CLIENT_ID,
             clientSecret: config.GITHUB_CLIENT_SECRET,
@@ -87,8 +89,8 @@ const initAuthStrategies = () => {
             }
         }
     ));
+ */
 
-/* 
     passport.use('ghlogin', new GitHubStrategy(
         {
             clientID: config.GITHUB_CLIENT_ID,
@@ -130,7 +132,7 @@ const initAuthStrategies = () => {
             }
         }
     ));
- */
+
     passport.use('register', new localStrategy(
         { passReqToCallback: true, usernameField: 'email' },
         async (req, email, password, done) => {

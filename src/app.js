@@ -1,6 +1,6 @@
 import express from 'express';
 import handlebars from 'express-handlebars';
-import config from './services/config.js';
+import config from './config.js';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -22,6 +22,7 @@ import chatRouter from './routes/chat.router.js';
 import cookiesRouter from './routes/cookies.routes.js';
 import authRouter from './routes/auth.routes.js'
 import TestRouter from './routes/test.router.js';
+import MongoSingleton from './services/mongo.singleton.js';
 
 
 const app = express ();
@@ -66,8 +67,9 @@ const fileStorage = FileStore(session);
 
     // Puerto donde escucha el servidor 
     const expressInstance = app.listen(config.PORT, async ()=>{
+        MongoSingleton.getInstance();
     //instanciamos el mongoose y que bbdd es a la que nos conectamos
-    await mongoose.connect(config.MONGODB_URI);
+   /*  await mongoose.connect(config.MONGODB_URI); */
     
     const socketServer = initSocket(expressInstance);
 

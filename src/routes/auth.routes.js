@@ -1,9 +1,10 @@
 import { Router } from "express";
-import config from "../services/config.js";
-import { isValidPassword, verifyRequiredBody, createHash, createToken, verifyToken } from "../services/utils.js";
+import config from "../config.js";
+import { isValidPassword, verifyRequiredBody, createHash, createToken, verifyToken, handlePolicies } from "../services/utils.js";
 import passport from "passport";
 import initAuthStrategies, { passportCall }  from "../auth/passaport.strategies.js";
 import usersManager from '../controllers/usersManager.db.js'
+
 
 
 const router = Router ();
@@ -24,11 +25,6 @@ const verifyAuthorization = role => {
         if (req.user.role !== role) return res.status(403).send({ origin: config.SERVER, payload: 'No tiene permisos para acceder al recurso' });
         
         next();
-    }
-}
-
-const handlePolicies = policies => {
-    return async (req, res, next) => {
     }
 }
 
@@ -89,16 +85,26 @@ router.post('/login',verifyRequiredBody(['email', 'password']), async (req, res)
         // En lugar de armar req.session.user manualmente, aprovechamos el operador spread (...)
         // para quitar la password del objeto foundUser y utilizar lo demás
         const { password, ...filteredFoundUser } = foundUser;
-        // req.session.user = { firstName: foundUser.firstName, lastName: foundUser.lastName, email: email, role: foundUser.role };
-        req.session.user = filteredFoundUser;
+        const token = createToken(filteredFoundUser, '1h');
+            res.cookie(`${config.APP_NAME}_cookie`, token, { maxAge: 60 * 60 * 1000, httpOnly: true });
+            res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' });
+        } else {
+            res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
+        }
+
+
+
+       /*  req.session.user = filteredFoundUser;
         req.session.save(err => {
             if (err) return res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
 
-            res.redirect('/profile');
+            res.redirect('/profile'); 
         });
     } else {
         res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
-    }
+    }*/
+
+
 } catch (err) {
     res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
 }
@@ -175,7 +181,7 @@ router.get('/logout', async (req, res) => {
 });
 
 // Ejemplo autenticación y autorización manual de admin
-router.get('/admin', verifyToken, verifyAuthorization('admin'), async (req, res) => {
+router.get('/admin', verifyToken, handlePolicies(['admin', 'premium']), async (req, res) => {
     try {
         res.status(200).send({ origin: config.SERVER, payload: 'Bienvenido ADMIN!' });
     } catch (err) {
@@ -190,5 +196,7 @@ router.get('/ppadmin', passportCall('jwtlogin'), verifyAuthorization('admin'), a
         res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
     }
 });
+
+
 
 export default router;

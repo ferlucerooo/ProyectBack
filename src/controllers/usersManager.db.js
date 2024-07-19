@@ -1,4 +1,5 @@
-import usersModel from '../dao/models/users.model.js';
+import usersModel from '../models/users.model.js';
+import UserDTO from './userDTO.js';
 
 class UsersManager {
     constructor() {
@@ -6,7 +7,8 @@ class UsersManager {
 
     getAll = async (limit = 0) => {
         try {
-            return limit === 0 ? await usersModel.find().lean(): await usersModel.find().limit(limit).lean();
+            const users = limit === 0 ? await usersModel.find().lean() : await usersModel.find().limit(limit).lean();
+            return users.map(user => new UserDTO(user));
         } catch (err) {
             return err.message;
         };
@@ -14,7 +16,8 @@ class UsersManager {
 
     getById = async (id) => {
         try {
-            return await usersModel.findById(id).lean();
+            const user = await usersModel.findById(id).lean();
+            return user ? new UserDTO(user) : null;
         } catch (err) {
             return err.message;
         };
@@ -22,7 +25,8 @@ class UsersManager {
 
     getOne = async (filter) => {
         try {
-            return await usersModel.findOne(filter).lean();
+            const user = await usersModel.findOne(filter).lean();
+            return user ? new UserDTO(user) : null;
         } catch (err) {
             return err.message;
         };
@@ -42,7 +46,9 @@ class UsersManager {
 
     getPaginated = async (filter, options) => {
         try {
-            return await usersModel.paginate(filter, options);
+            const result = await usersModel.paginate(filter, options);
+            result.docs = result.docs.map(user => new UserDTO(user));
+            return result;
         } catch (err) {
             return err.message;
         };
@@ -58,7 +64,8 @@ class UsersManager {
 
     update = async (filter, update, options) => {
         try {
-            return await usersModel.findOneAndUpdate(filter, update, options);
+            const user = await usersModel.findOneAndUpdate(filter, update, options).lean();
+            return user ? new UserDTO(user) : null;
         } catch (err) {
             return err.message;
         };
@@ -66,7 +73,8 @@ class UsersManager {
 
     delete = async (filter) => {
         try {
-            return await usersModel.findOneAndDelete(filter);
+            const user = await usersModel.findOneAndDelete(filter).lean();
+            return user ? new UserDTO(user) : null;
         } catch (err) {
             return err.message;
         };

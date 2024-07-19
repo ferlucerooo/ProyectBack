@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import messageModel from '../dao/models/message.model.js'
+import messageModel from '../models/message.model.js'
 
 
 const initSocket = (httpServer) => {

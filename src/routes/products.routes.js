@@ -1,17 +1,52 @@
 import { Router } from "express";
-import config from '../services/config.js'
+import config from '../config.js'
 import ProductManagerDB from "../controllers/productManager.db.js";
+import { verifyToken, handlePolicies,verifyMongoDBId} from "../services/utils.js";
+import nodemailer from 'nodemailer';
 
 const router = Router ();
 const productManager = ProductManagerDB.getInstance();
 
-router.param('id', async (req, res, next, id) => {
+router.param('id', verifyMongoDBId());
+
+/* router.param('id', async (req, res, next, id) => {
     if (!config.MONGODB_ID_REGEX.test(req.params.id)) {
         return res.status(400).send({ origin: config.SERVER, payload: null, error: 'Id no válido' });
     }
 
     next();
-})
+}) */
+
+    const transport = nodemailer.createTransport({
+        service: 'gmail',
+        port: 587,
+        auth: {
+            user: config.GMAIL_APP_USER,
+            // Atención!, si se va a aplicar un STMP de Gmail,
+            // NO podrá usarse la clave original, se debe generar
+            // una clave de app en su lugar:
+            // https://myaccount.google.com/apppasswords.
+            pass: config.GMAIL_APP_PASS
+        }
+    });
+
+    
+/* router.get('/mail', async (req, res) => {
+    try {
+        // Utilizando el transporte, podemos enviar a través
+        // del SMTP que hayamos configurado, mensajes vía email
+        // a los destinatarios que deseemos
+        const confirmation = await transport.sendMail({
+            from: `Sistema Coder <${config.GMAIL_APP_USER}>`, // email origen
+            to: 'email@destino.com',
+            subject: 'Pruebas Nodemailer',
+            html: '<h1>Prueba 01</h1>'
+        });
+        res.status(200).send({ status: 'OK', data: confirmation });
+    } catch (err) {
+        res.status(500).send({ status: 'ERR', data: err.message });
+    }
+}); */
 
 router.get('/products', async (req,res)=>{
     try{
@@ -60,9 +95,6 @@ router.get('/', async (req,res)=>{
     
 });
 
-
-
-
 router.get('/', async (req,res)=>{
     try{
         
@@ -98,7 +130,7 @@ router.get('/:pid', async (req, res)=> {
 
 });
 
-router.post('/', async (req,res)=>{
+router.post('/',verifyToken, handlePolicies('admin', 'premium'), async (req,res)=>{
     try{
         const addProduct = req.body;
         const newProduct = await productManager.addProduct(addProduct);
@@ -111,7 +143,7 @@ router.post('/', async (req,res)=>{
     
 })
 
-router.put('/:pid', async (req,res)=>{
+router.put('/:pid',verifyToken, handlePolicies('admin', 'premium'), async (req,res)=>{
     try{
         const pid = req.params.pid;
         const update = req.body;
@@ -129,7 +161,7 @@ router.put('/:pid', async (req,res)=>{
 
 })
 
-router.delete('/:pid', async (req,res)=>{
+router.delete('/:pid',handlePolicies('admin'), async (req,res)=>{
 
     try{
         const pid = req.params.pid;

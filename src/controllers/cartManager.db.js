@@ -1,5 +1,6 @@
-import cartModel from "../dao/models/cart.model.js";
-import ProductManagerDB from "../dao/models/products.model.js";
+import cartModel from "../models/cart.model.js";
+import ProductManagerDB from "../models/products.model.js";
+import Ticket from '../models/ticket.model.js'
 
 class CartManagerDB{
     static #instace;
@@ -145,6 +146,99 @@ class CartManagerDB{
             throw error;
         }
     }
+
+
+    
+   /*  async punchaseCart(cart) {
+        try {
+            console.log('Carrito a cerrar', cart);
+            //console.log('Array de productos del carrito', cart.products);
+            let totalTicket = 0;
+            let cartUpdate = [];
+            for (let i = 0; i < cart.products.length; i++) {
+                if (cart.products[i]._id.stock >= cart.products[i].quantity) {
+                    console.log('Si alcanza', cart.products[i]);
+                    totalTicket =+ (cart.products[i].quantity * cart.products[i]._id.price);
+                    const prodManager = new ProductManager();
+                    const cantNewStock = cart.products[i]._id.stock - cart.products[i].quantity
+                    
+                    const prodEdit = await prodManager.updateProduct(cart.products[i]._id._id, { stock: cantNewStock } );
+                    
+                    cartUpdate = cart.products.splice(i, 1);
+                    i--; // Decrementar el índice para ajustar el desplazamiento del array
+                } else {
+                    console.log('No alcanza');
+                }
+            };
+
+            if (totalTicket > 0) {
+                console.log('req.session.user: ', req.session.user)
+                    
+                const ticket = {
+                    code: uuidv4(),
+                    amount: totalTicket,
+                    purchaser: 'ttttt'
+                }
+                
+                console.log('Ticket: ', ticket);            
+            }
+            
+            const cartResult = await service.update(cart._id, cart);
+
+            return cartResult
+            
+        } catch (error) {
+            console.log('Error al borrar los productos del carrito ttttttttttttttttttttttt.');
+            console.log(error);
+        }
+    }
 };
+ */
+
+async purchaseCart(cartId, purchaserEmail) {
+    try {
+        const cart = await this.getCartById(cartId);
+        if (!cart) {
+            throw new Error('Cart not found');
+        }
+
+        let totalAmount = 0;
+        const purchasedProducts = [];
+        const failedProducts = [];
+
+        for (const item of cart.products) {
+            const product = await ProductManagerDB.getInstance().getProductById(item.productId);
+            if (product.stock >= item.quantity) {
+                product.stock -= item.quantity;
+                await product.save();
+                totalAmount += product.price * item.quantity;
+                purchasedProducts.push(item.productId);
+            } else {
+                failedProducts.push(item.productId);
+            }
+        }
+
+        const ticket = new Ticket({
+            code: uuidv4(),
+            amount: totalAmount,
+            purchaser: purchaserEmail,
+        });
+
+        await ticket.save();
+
+        // Filtrar los productos comprados del carrito
+        cart.products = cart.products.filter(item => !purchasedProducts.includes(item.productId));
+        await cartModel.updateOne({ _id: cartId }, { products: cart.products });
+
+        return {
+            message: 'Purchase completed',
+            failedProducts,
+        };
+    } catch (error) {
+        throw error;
+    }
+}
+};
+
 
 export default CartManagerDB;
