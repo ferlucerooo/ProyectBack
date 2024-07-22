@@ -1,10 +1,42 @@
 import { Router } from "express";
 import CartManagerDB from "../controllers/cartManager.db.js";
 import { handlePolicies } from "../services/utils.js";
+import nodemailer from 'nodemailer';
+import config from "../config.js";
 
 const router = Router ();
 
 const cartManager = CartManagerDB.getInstance();
+
+const transport = nodemailer.createTransport({
+    service: 'gmail',
+    port: 587,
+    auth: {
+        user: config.GMAIL_APP_USER,
+        // Atención!, si se va a aplicar un STMP de Gmail,
+        // NO podrá usarse la clave original, se debe generar
+        // una clave de app en su lugar:
+        // https://myaccount.google.com/apppasswords.
+        pass: config.GMAIL_APP_PASS
+    }
+});
+
+router.get('/mail', async (req, res) => {
+    try {
+        // Utilizando el transporte, podemos enviar a través
+        // del SMTP que hayamos configurado, mensajes vía email
+        // a los destinatarios que deseemos
+        const confirmation = await transport.sendMail({
+            from: `Sistema Coder <${config.GMAIL_APP_USER}>`, // email origen
+            to: 'ferlucero2210@gmail.com',
+            subject: 'Pruebas Nodemailer',
+            html: '<h1>Prueba 01</h1>'
+        });
+        res.status(200).send({ status: 'OK', data: confirmation });
+    } catch (err) {
+        res.status(500).send({ status: 'ERR', data: err.message });
+    }
+});
 
 router.post('/',async (req,res)=> {
     try{

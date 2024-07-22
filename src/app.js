@@ -21,7 +21,7 @@ import usersRouter from './routes/users.routes.js';
 import chatRouter from './routes/chat.router.js';
 import cookiesRouter from './routes/cookies.routes.js';
 import authRouter from './routes/auth.routes.js'
-import TestRouter from './routes/test.router.js';
+/* import TestRouter from './routes/test.router.js'; */
 import MongoSingleton from './services/mongo.singleton.js';
 
 
@@ -62,7 +62,7 @@ const fileStorage = FileStore(session);
     app.use('/api/users', usersRouter);
     app.use('/api/cookies',cookiesRouter);
     app.use('/api/auth',authRouter);
-    app.use('/api/test', new TestRouter().getRouter());
+    /* app.use('/api/test', new TestRouter().getRouter()); */
 
 
     // Puerto donde escucha el servidor 
