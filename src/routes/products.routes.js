@@ -2,20 +2,12 @@ import { Router } from "express";
 import config from '../config.js'
 import ProductManagerDB from "../controllers/productManager.db.js";
 import { verifyToken, handlePolicies,verifyMongoDBId} from "../services/utils.js";
-import nodemailer from 'nodemailer';
+import {generateMockProducts} from '../services/mocking.js'
 
 const router = Router ();
 const productManager = ProductManagerDB.getInstance();
 
 router.param('id', verifyMongoDBId());
-
-/* router.param('id', async (req, res, next, id) => {
-    if (!config.MONGODB_ID_REGEX.test(req.params.id)) {
-        return res.status(400).send({ origin: config.SERVER, payload: null, error: 'Id no válido' });
-    }
-
-    next();
-}) */
 
 
 router.get('/products', async (req,res)=>{
@@ -99,6 +91,16 @@ router.get('/:pid', async (req, res)=> {
     }
 
 });
+
+router.get('/mocking/:qty', async (req,res)=> {
+    const qty = parseInt(req.params.qty, 10);
+    if (isNaN(qty) || qty <= 0) {
+      return res.status(400).send({ status: 'ERROR', message: 'Invalid quantity' });
+    }
+    const data =  generateMockProducts(qty);
+    res.status(200).send({ status: 'OK', payload: data });
+    console.log(data);
+  });
 
 router.post('/',verifyToken, handlePolicies('admin', 'premium'), async (req,res)=>{
     try{
