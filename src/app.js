@@ -23,6 +23,7 @@ import cookiesRouter from './routes/cookies.routes.js';
 import authRouter from './routes/auth.routes.js'
 /* import TestRouter from './routes/test.router.js'; */
 import MongoSingleton from './services/mongo.singleton.js';
+import { errorsHandler } from './services/utils.js';
 
 
 const app = express ();
@@ -62,6 +63,7 @@ const fileStorage = FileStore(session);
     app.use('/api/users', usersRouter);
     app.use('/api/cookies',cookiesRouter);
     app.use('/api/auth',authRouter);
+    app.use(errorsHandler);
     /* app.use('/api/test', new TestRouter().getRouter()); */
 
 

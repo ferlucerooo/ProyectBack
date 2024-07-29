@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import config from '../config.js';
 import UsersManager from '../controllers/usersManager.db.js';
+import { verifyRequiredBody } from '../services/utils.js';
 
 const router = Router();
 const manager = new UsersManager();
@@ -35,7 +36,7 @@ router.get('/paginate/:page/:limit', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/',verifyRequiredBody(['firstName','lastName','email','password']), async (req, res) => {
     try {
         const process = await manager.add(req.body);
         

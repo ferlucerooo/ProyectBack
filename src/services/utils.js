@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import config from '../config.js';
+import config, {errorsDictionary} from '../config.js';
+import CustomError from './errors.js';
 
 export const createHash = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10));
 
@@ -30,7 +31,8 @@ export const verifyRequiredBody = (requiredFields) => {
             req.body.hasOwnProperty(field) && req.body[field] !== '' && req.body[field] !== null && req.body[field] !== undefined
         );
         
-        if (!allOk) return res.status(400).send({ origin: config.SERVER, payload: 'Faltan propiedades', requiredFields });
+        /* if (!allOk) return res.status(400).send({ origin: config.SERVER, payload: 'Faltan propiedades', requiredFields }); */
+        if (!allOk) throw new CustomError(errorsDictionary.FEW_PARAMETERS);
   
       next();
     };
@@ -71,3 +73,14 @@ export const handlePolicies = policies => {
         res.status(403).send({ origin: config.SERVER, payload: 'No tiene permisos para acceder al recurso' });
     }
 }
+
+export const errorsHandler = (error, req, res, next) => {
+    console.log('ingresa');
+    let customErr = errorsDictionary[0];
+    for (const key in errorsDictionary) {
+        if (errorsDictionary[key].code === error.type.code) customErr = errorsDictionary[key];
+    }
+    
+    return res.status(customErr.status).send({ origin: config.SERVER, payload: '', error: customErr.message });
+}
+
