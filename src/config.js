@@ -17,7 +17,7 @@ const clOptions = commandLine.opts();
 
 const config = {
     APP_NAME: 'coder',
-    SERVER: 'atlas',
+    SERVER: process.env.SERVER,
     PORT: process.env.PORT || clOptions.port || 8080,
     // DIRNAME: url.fileURLToPath(new URL('.', import.meta.url)), // Linux / Mac
     DIRNAME: path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:\/)/, '$1')), // Win
@@ -33,7 +33,8 @@ const config = {
     GMAIL_APP_PASS: process.env.GMAIL_APP_PASS,
     TWILIO_SID: process.env.TWILIO_SID,
     TWILIO_TOKEN: process.env.TWILIO_TOKEN,
-    TWILIO_PHONE: process.env.TWILIO_PHONE
+    TWILIO_PHONE: process.env.TWILIO_PHONE,
+    MODE: process.env.MODE,
 }
 
 export const errorsDictionary = {

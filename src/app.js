@@ -8,6 +8,8 @@ import passport from 'passport';
 import initSocket from './services/socket.js';
 import FileStore from 'session-file-store';
 import cors from 'cors';
+import addLogger from './services/logger.js'
+
 
 
 /* import MongoStore from 'connect-mongo'; */
@@ -55,6 +57,7 @@ const fileStorage = FileStore(session);
     app.set('views', `${config.DIRNAME}/views`);
     app.set('view engine','handlebars');
 //Rutas
+    app.use(addLogger);
     app.use('/api/products',productsRoutes);
     app.use('/api/carts', cartsRoutes);
     app.use('/chat',chatRouter);
@@ -78,7 +81,7 @@ const fileStorage = FileStore(session);
     app.set('socketServer', socketServer);
     
 
-    console.log(`Servidor Express activo en el puerto ${config.PORT} enlazada a bbdd`);
+    console.log(`Servidor Express activo en el puerto ${config.PORT} enlazada a bbdd ${config.SERVER}`);
 });
 
 
