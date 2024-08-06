@@ -23,9 +23,11 @@ import usersRouter from './routes/users.routes.js';
 import chatRouter from './routes/chat.router.js';
 import cookiesRouter from './routes/cookies.routes.js';
 import authRouter from './routes/auth.routes.js'
+import loggerTest from './routes/loggerTest.routes.js'
 /* import TestRouter from './routes/test.router.js'; */
 import MongoSingleton from './services/mongo.singleton.js';
 import { errorsHandler } from './services/utils.js';
+
 
 
 const app = express ();
@@ -66,6 +68,8 @@ const fileStorage = FileStore(session);
     app.use('/api/users', usersRouter);
     app.use('/api/cookies',cookiesRouter);
     app.use('/api/auth',authRouter);
+    app.use('/loggerTest', loggerTest);
+    
     app.use(errorsHandler);
     /* app.use('/api/test', new TestRouter().getRouter()); */
 
@@ -80,7 +84,6 @@ const fileStorage = FileStore(session);
 
     app.set('socketServer', socketServer);
     
-
     console.log(`Servidor Express activo en el puerto ${config.PORT} enlazada a bbdd ${config.SERVER}`);
 });
 

@@ -62,7 +62,7 @@ const devLogger = winston.createLogger({
 const addLogger = (req, res, next) => {
     //req.logger = devLogger;
     req.logger = config.MODE === 'dev' ? devLogger : prodLogger;
-    //req.logger.http(`${new Date().toDateString()} ${req.method} ${req.url}`);
+    req.logger.http(`${new Date().toDateString()} ${req.method} ${req.url}`);
     next();
 }
 

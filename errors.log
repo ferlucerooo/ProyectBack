@@ -1,0 +1,16 @@
+{"level":"http","message":"Mon Aug 05 2024 GET /login","timestamp":"2024-08-06T01:10:21.080Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /favicon.ico","timestamp":"2024-08-06T01:10:21.228Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /loggerTest","timestamp":"2024-08-06T01:31:01.611Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /loggerTest","timestamp":"2024-08-06T01:36:27.733Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /","timestamp":"2024-08-06T01:36:27.735Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /loggerTest","timestamp":"2024-08-06T01:36:59.417Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /","timestamp":"2024-08-06T01:36:59.417Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /loggerTest","timestamp":"2024-08-06T01:37:10.045Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /","timestamp":"2024-08-06T01:37:10.047Z"}
+{"level":"debug","message":"This is a debug log","timestamp":"2024-08-06T01:37:10.047Z"}
+{"level":"http","message":"This is an http log","timestamp":"2024-08-06T01:37:10.047Z"}
+{"level":"info","message":"This is an info log","timestamp":"2024-08-06T01:37:10.047Z"}
+{"level":"warning","message":"This is a warning log","timestamp":"2024-08-06T01:37:10.048Z"}
+{"level":"error","message":"This is an error log","timestamp":"2024-08-06T01:37:10.048Z"}
+{"level":"http","message":"Mon Aug 05 2024 POST /api/users","timestamp":"2024-08-06T01:49:30.163Z"}
+{"level":"http","message":"Mon Aug 05 2024 POST /api/users","timestamp":"2024-08-06T01:52:28.337Z"}
