@@ -69,7 +69,7 @@ const fileStorage = FileStore(session);
     app.use('/api/cookies',cookiesRouter);
     app.use('/api/auth',authRouter);
     app.use('/loggerTest', loggerTest);
-    
+
     app.use(errorsHandler);
     /* app.use('/api/test', new TestRouter().getRouter()); */
 

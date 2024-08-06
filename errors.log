@@ -14,3 +14,16 @@
 {"level":"error","message":"This is an error log","timestamp":"2024-08-06T01:37:10.048Z"}
 {"level":"http","message":"Mon Aug 05 2024 POST /api/users","timestamp":"2024-08-06T01:49:30.163Z"}
 {"level":"http","message":"Mon Aug 05 2024 POST /api/users","timestamp":"2024-08-06T01:52:28.337Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /loggerTest","timestamp":"2024-08-06T02:00:22.152Z"}
+{"level":"error","message":"date: Mon Aug 05 2024 23:00:22 | method: GET | ip: ::1 | url: /loggerTest | user: undefined","timestamp":"2024-08-06T02:00:22.231Z"}
+{"level":"warning","message":"date: Mon Aug 05 2024 23:00:22 | method: GET | ip: ::1 | url: /loggerTest | user: undefined","timestamp":"2024-08-06T02:00:22.232Z"}
+{"level":"info","message":"date: Mon Aug 05 2024 23:00:22 | method: GET | ip: ::1 | url: /loggerTest | user: undefined","timestamp":"2024-08-06T02:00:22.232Z"}
+{"level":"http","message":"date: Mon Aug 05 2024 23:00:22 | method: GET | ip: ::1 | url: /loggerTest | user: undefined","timestamp":"2024-08-06T02:00:22.232Z"}
+{"level":"debug","message":"date: Mon Aug 05 2024 23:00:22 | method: GET | ip: ::1 | url: /loggerTest | user: undefined","timestamp":"2024-08-06T02:00:22.233Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /loggerTest","timestamp":"2024-08-06T02:02:03.652Z"}
+{"level":"http","message":"Mon Aug 05 2024 GET /","timestamp":"2024-08-06T02:02:03.654Z"}
+{"level":"error","message":"date: Mon Aug 05 2024 23:02:03 | method: GET | ip: ::1 | url: / | user: undefined","timestamp":"2024-08-06T02:02:03.674Z"}
+{"level":"warning","message":"date: Mon Aug 05 2024 23:02:03 | method: GET | ip: ::1 | url: / | user: undefined","timestamp":"2024-08-06T02:02:03.674Z"}
+{"level":"info","message":"date: Mon Aug 05 2024 23:02:03 | method: GET | ip: ::1 | url: / | user: undefined","timestamp":"2024-08-06T02:02:03.674Z"}
+{"level":"http","message":"date: Mon Aug 05 2024 23:02:03 | method: GET | ip: ::1 | url: / | user: undefined","timestamp":"2024-08-06T02:02:03.675Z"}
+{"level":"debug","message":"date: Mon Aug 05 2024 23:02:03 | method: GET | ip: ::1 | url: / | user: undefined","timestamp":"2024-08-06T02:02:03.675Z"}

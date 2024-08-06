@@ -86,5 +86,4 @@ router.get('/profile', (req, res) => {
     res.render('profile', { user: req.session.user});
 });
 
-
 export default router;

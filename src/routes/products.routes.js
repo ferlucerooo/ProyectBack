@@ -154,6 +154,8 @@ router.delete('/:pid',handlePolicies('admin'), async (req,res)=>{
 
 router.all('*', async (req, res) => {
     res.status(404).send({ origin: config.SERVER, payload: null, error: 'No se encuentra la ruta solicitada' }); 
+    
+    req.logger.error(`date: ${new Date().toDateString()} ${new Date().toLocaleTimeString()} | method: ${req.method} | ip: ${req.ip} | url: ${routeUrl}${req.url}`);
 });
 
 export default router;
