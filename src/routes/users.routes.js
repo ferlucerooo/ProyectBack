@@ -84,4 +84,39 @@ router.get('/current', async (req, res) => {
     }
 });
 
+router.post('/resetpassword', verifyRequiredBody(['email']), async (req, res) => {
+    try {
+        await manager.generateResetLink(req.body.email);
+        res.status(200).send({ message: 'Reset link sent' });
+    } catch (err) {
+        res.status(500).send({ error: err.message });
+    }
+});
+
+// Ruta para resetear la contraseña
+router.post('/resetpassword/:token', verifyRequiredBody(['newPassword']), async (req, res) => {
+    try {
+        await manager.resetPassword(req.params.token, req.body.newPassword);
+        res.status(200).send({ message: 'Password reset successfully' });
+    } catch (err) {
+        res.status(500).send({ error: err.message });
+    }
+});
+
+router.post('/premium/:uid', async (req, res) => {
+    try {
+        const user = await manager.getById(req.params.uid);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.role = user.role === 'user' ? 'premium' : 'user';
+        await user.save();
+
+        res.status(200).send({ message: `User role updated to ${user.role}` });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 export default router;

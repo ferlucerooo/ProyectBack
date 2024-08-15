@@ -1,5 +1,8 @@
 import usersModel from '../models/users.model.js';
 import UserDTO from './userDTO.js';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 
 class UsersManager {
     constructor() {
@@ -78,6 +81,55 @@ class UsersManager {
         } catch (err) {
             return err.message;
         };
+    };
+
+    generateResetLink = async (email) => {
+        const user = await usersModel.findOne({ email });
+        if (!user) throw new CustomError(errorsDictionary.ID_NOT_FOUND);
+
+        const token = crypto.randomBytes(32).toString('hex');
+        user.resetToken = token;
+        user.resetTokenExpiration = Date.now() + 3600000; // 1 hora
+        await user.save();
+
+        const resetLink = `${config.SERVER}/resetpassword/${token}`;
+
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: config.GMAIL_APP_USER,
+                pass: config.GMAIL_APP_PASS,
+            },
+        });
+
+        try {
+            await transporter.sendMail({
+                to: email,
+                from: 'passwordreset@demo.com',
+                subject: 'Password Reset',
+                html: `<p>You requested a password reset</p>
+                       <p>Click this <a href="${resetLink}">link</a> to set a new password.</p>`
+            });
+        } catch (err) {
+            throw new CustomError(errorsDictionary.EMAIL_SEND_ERROR);
+        }
+
+        return true;
+    };
+
+    resetPassword = async (token, newPassword) => {
+        const user = await usersModel.findOne({ resetToken: token, resetTokenExpiration: { $gt: Date.now() } });
+        if (!user) throw new CustomError(errorsDictionary.TOKEN_INVALID);
+
+        const isSamePassword = await bcrypt.compare(newPassword, user.password);
+        if (isSamePassword) throw new CustomError(errorsDictionary.SAME_PASSWORD_ERROR);
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetToken = undefined;
+        user.resetTokenExpiration = undefined;
+        await user.save();
+
+        return true;
     };
 }
 

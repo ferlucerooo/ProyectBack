@@ -9,6 +9,8 @@ import initSocket from './services/socket.js';
 import FileStore from 'session-file-store';
 import cors from 'cors';
 import addLogger from './services/logger.js'
+import cluster from 'cluster';
+import { cpus } from 'os';
 
 
 
@@ -30,8 +32,18 @@ import { errorsHandler } from './services/utils.js';
 
 
 
-const app = express ();
-const fileStorage = FileStore(session);
+if(cluster.isPrimary){
+     // Inicializando cluster de 8 instancias
+     for (let i = 0; i < cpus().length; i++) cluster.fork();
+
+     cluster.on('exit', (worker, code, signal) =>{
+         console.log(`Se cayó la instancia ${worker.process.pid}`);
+         cluster.fork();
+        });
+}else{
+    try{    
+        const app = express ();
+        const fileStorage = FileStore(session);
 
     app.use(cors({
         origin: '*'
@@ -86,5 +98,13 @@ const fileStorage = FileStore(session);
     
     console.log(`Servidor Express activo en el puerto ${config.PORT} enlazada a bbdd ${config.SERVER}`);
 });
+    }
+    catch(error){
+
+    console.log(`Error starting app (${error.message})`);
+    }
+}
+
+
 
 

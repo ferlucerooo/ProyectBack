@@ -11,6 +11,8 @@ const schema = new mongoose.Schema({
     email: { type: String, required: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['admin', 'premium', 'user'], default: 'user' },
+    resetToken: String,
+    resetTokenExpiration: Date,
     // Las propiedades grade y region las colocamos para probar el uso de aggregate,
     // deshabilitarlas al testear el paginado con la otra colección
    /*  grade: { type: Number, required: true },
