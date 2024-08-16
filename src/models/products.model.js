@@ -13,6 +13,7 @@ const schema = new mongoose.Schema({
     code:{type: String, required: true, index: true} ,
     category:{type:String, required: true},
     stock:{type: Number, required: true},
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true }
 });
 
 schema.plugin(mongoosePaginate);

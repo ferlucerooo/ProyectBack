@@ -133,9 +133,12 @@ router.put('/:cid', async (req,res)=>{
 router.put('/:cid/product/:pid', async (req,res)=>{
     try{
         const {cid, pid} = req.params;
-        const {quantity} = req.body;
-        const cart = await cartManager.updateProdQuantity(cid, pid, quantity);
-        res.json({status: 'succes', payload: cart});
+        /* const {quantity} = req.body; */
+        const user = req.user; 
+        /* const cart = await cartManager.updateProdQuantity(cid, pid,quantity); */
+        await cartManager.addProductToCart(cid, pid, user);
+        res.json({ payload: `Producto con id ${pid} agregado al carrito ${cid}` });
+        /* res.json({status: 'succes', payload: cart}); */
     } catch (error){
         console.log('Error al actualizar la cantidad del producto en el carrito', error);
         res.status(500).json({error: error.message});

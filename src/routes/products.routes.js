@@ -15,11 +15,12 @@ router.get('/products', async (req,res)=>{
         const limit = parseInt(req.query.limit) || 5;
         const page = parseInt(req.query.page) || 1;
         const sort = req.query.sort === 'asc' ? 1 : req.query.sort === 'des' ? -1 : null;
+        const owner = req.query.owner || null;
         const query = req.query.query ? JSON.parse(req.query.query) : {}; // Consulta adicional
         const category = req.query.category ? { category: req.query.category } : {}; // Filtro por categoría
     
 
-        const result = await productManager.getProducts(limit, page, sort, query,category);
+        const result = await productManager.getProducts(limit, page, sort, query,{category, owner});
         console.log(result);
         res.render('products', {
             user: req.session.user,
@@ -57,7 +58,7 @@ router.get('/', async (req,res)=>{
     
 });
 
-router.get('/', async (req,res)=>{
+/* router.get('/', async (req,res)=>{
     try{
         
         const productsDb = await productManager.getProducts();
@@ -68,7 +69,7 @@ router.get('/', async (req,res)=>{
         res.status(500).send('Error al obtener los productos');
     }
     
-});
+}); */
 
 router.get('/:pid', async (req, res)=> {
 
@@ -104,7 +105,7 @@ router.get('/mocking/:qty', async (req,res)=> {
 
 router.post('/',verifyToken, handlePolicies('admin', 'premium'), async (req,res)=>{
     try{
-        const addProduct = req.body;
+        const addProduct = {...req.body,owner: req.user.id};
         const newProduct = await productManager.addProduct(addProduct);
 
         res.status(201).json(newProduct);
@@ -133,12 +134,20 @@ router.put('/:pid',verifyToken, handlePolicies('admin', 'premium'), async (req,r
 
 })
 
-router.delete('/:pid',handlePolicies('admin'), async (req,res)=>{
+router.delete('/:pid', verifyToken,handlePolicies('admin'), async (req,res)=>{
 
     try{
         const pid = req.params.pid;
         const deleteProduct = await productManager.deleteProduct(pid);
+        const product = await productManager.getProductById(pid);
 
+        if (!product) {
+            return res.status(404).send({ message: 'Producto no encontrado' });
+        }
+
+        if (product.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'No autorizado para eliminar este producto' });
+        }
 
         if(deleteProduct){
             res.json({payload: deleteProduct})
@@ -148,7 +157,7 @@ router.delete('/:pid',handlePolicies('admin'), async (req,res)=>{
         }
     }catch(error){
         console.log('Error al eliminar el producto',(error)); 
-        res.status(500).send({messag: 'Error al eliminar el producto'});                                                                                                                                                                       
+        res.status(500).send({message: 'Error al eliminar el producto'});                                                                                                                                                                       
     }
 })
 

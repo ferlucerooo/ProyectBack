@@ -1,6 +1,8 @@
 import cartModel from "../models/cart.model.js";
 import ProductManagerDB from "../models/products.model.js";
 import Ticket from '../models/ticket.model.js'
+import CustomError from '../errors/CustomError.js';
+import { errorsDictionary } from '../config/errors.js';
 
 class CartManagerDB{
     static #instace;
@@ -44,7 +46,7 @@ class CartManagerDB{
             throw error;
         }
     }
-
+/* 
     async addProductToCart(cid, pid) {
         try {
             await ProductManagerDB.getInstance().getProductById(pid);
@@ -56,6 +58,32 @@ class CartManagerDB{
             } else {
                 cart.products.push({ productId: pid, quantity: 1 });
             }
+            cart = await cartModel.findByIdAndUpdate(cid, { products: cart.products }, { new: true }).populate('products.productId').lean();
+            return cart;
+        } catch (error) {
+            throw error;
+        }
+    }
+ */
+
+    async addProductToCart(cid, pid, user) {
+        try {
+            const product = await ProductManagerDB.getInstance().getProductById(pid);
+            let cart = await this.getCartById(cid);
+
+            // Verificación si el usuario es premium y es dueño del producto
+            if (user.role === 'premium' && product.owner.toString() === user._id.toString()) {
+                throw new CustomError(errorsDictionary.OWN_PRODUCT_ERROR, 'Premium users cannot add their own products to the cart');
+            }
+
+            const productIndex = cart.products.findIndex(p => p.productId && p.productId._id.toString() === pid);
+
+            if (productIndex !== -1) {
+                cart.products[productIndex].quantity++;
+            } else {
+                cart.products.push({ productId: pid, quantity: 1 });
+            }
+
             cart = await cartModel.findByIdAndUpdate(cid, { products: cart.products }, { new: true }).populate('products.productId').lean();
             return cart;
         } catch (error) {

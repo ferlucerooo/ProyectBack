@@ -35,6 +35,10 @@ class ProductManagerDB {
             if (!products) {
                 throw new Error('No se encontraron productos');
             }
+
+            if(query.owner) {
+                queryObj.owner = query.owner; // Filtrar por propietario si se proporciona
+            }
     
             return products;
         } catch (error) {
@@ -59,6 +63,9 @@ async getProductById(id){
             product = await productModel.create(product);
             if(!product){
                 throw new Error('No se pudo crear el producto');
+            }
+            if (!product.owner) {
+                throw new Error('El producto debe tener un propietario');
             }
             return product;
         }catch(error){
