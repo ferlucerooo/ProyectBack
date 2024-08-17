@@ -1,8 +1,8 @@
 import cartModel from "../models/cart.model.js";
 import ProductManagerDB from "../models/products.model.js";
 import Ticket from '../models/ticket.model.js'
-import CustomError from '../errors/CustomError.js';
-import { errorsDictionary } from '../config/errors.js';
+import CustomError from '../services/errors.js';
+import { errorsDictionary } from '../config.js';
 
 class CartManagerDB{
     static #instace;
@@ -17,15 +17,19 @@ class CartManagerDB{
         return CartManagerDB.#instace;
     };
 
+    validateId(id) {
+        if (id.length !== 24) {
+            throw new CustomError(errorsDictionary.INVALID_ID, 'El ID debe tener 24 caracteres');
+        }
+    }
+
     async getCartById(id){
         try{
-            if(id.length !== 24){
-                throw new Error('el id debe tener 24 caracteres');
-            }
+           this.validateId(id);
             const cart = await cartModel.findOne({_id: id}).populate('products.productId').lean();
 
             if(!cart){
-                throw new Error(`No se encontro el carrito con el id ${id}`);
+                throw new CustomError(errorsDictionary.NOT_FOUND, `No se encontró el carrito con el ID ${id}`);
             }
             return cart;
         }catch(error){
@@ -38,7 +42,7 @@ class CartManagerDB{
             const cart = await cartModel.create({});
 
             if(!cart){
-                throw new Error ('No se pudo crear el carrito');
+                throw new CustomError(errorsDictionary.CREATE_ERROR, 'No se pudo crear el carrito');
             }
 
             return cart;
@@ -93,6 +97,7 @@ class CartManagerDB{
 
     async updatedCart (id, products){
         try{
+            this.validateId(id);
             const promises = products.map(product => {
                 return ProductManagerDB.getInstance().getProductById(product.product)
                 .catch(error => {
@@ -129,7 +134,7 @@ class CartManagerDB{
             let cart = await this.getCartById(cartId);
             const productIndex = cart.products.findIndex(product => product.productId.id.toString() === productId);
             if(productIndex === -1) {
-                throw new Error(`No se encontró el producto con id ${productId} en el carrito con id ${cartId}`);
+                throw new CustomError(errorsDictionary.PRODUCT_NOT_FOUND, `No se encontró el producto con ID ${productId} en el carrito con ID ${cartId}`);
             } else {
                 cart.products[productIndex].quantity = quantity;
             }
@@ -161,7 +166,7 @@ class CartManagerDB{
     
             const productIndex = cart.products.findIndex(product => product.productId && product.productId._id.toString() === productId);
             if (productIndex === -1) {
-                throw new Error(`No se encontró el producto con id ${productId} en el carrito con id ${cartId}`);
+                throw new CustomError(errorsDictionary.PRODUCT_NOT_FOUND, `No se encontró el producto con ID ${productId} en el carrito con ID ${cartId}`);
             } else {
                 cart.products.splice(productIndex, 1);
             }
@@ -227,7 +232,7 @@ async purchaseCart(cartId, purchaserEmail) {
     try {
         const cart = await this.getCartById(cartId);
         if (!cart) {
-            throw new Error('Cart not found');
+            throw new CustomError(errorsDictionary.NOT_FOUND, 'Carrito no encontrado');
         }
 
         let totalAmount = 0;

@@ -29,7 +29,13 @@ class UsersManager {
     getOne = async (filter) => {
         try {
             const user = await usersModel.findOne(filter).lean();
-            return user ? new UserDTO(user) : null;
+            if (user) {
+                console.log('Usuario desde DB:', user); // Verifica qué campos está devolviendo la DB
+                return new UserDTO(user);
+            }
+            return null; // Retorna null si no se encuentra el usuario
+           /*  const user = await usersModel.findOne(filter).lean();
+            return user ? new UserDTO(user) : null; */
         } catch (err) {
             return err.message;
         };
@@ -105,8 +111,9 @@ class UsersManager {
         try {
             await transporter.sendMail({
                 to: email,
-                from: 'passwordreset@demo.com',
+                from: `Sistema Coder <${config.GMAIL_APP_USER}>`,
                 subject: 'Password Reset',
+                to: 'ferlucero2210@gmail.com',
                 html: `<p>You requested a password reset</p>
                        <p>Click this <a href="${resetLink}">link</a> to set a new password.</p>`
             });
@@ -131,6 +138,16 @@ class UsersManager {
 
         return true;
     };
+    async update(filter, update) {
+        try {
+            // Utiliza el método de Mongoose `findOneAndUpdate` para actualizar un documento
+            const updatedUser = await UserModel.findOneAndUpdate(filter, update, { new: true });
+            return updatedUser;
+        } catch (error) {
+            throw new Error(`Error al actualizar el usuario: ${error.message}`);
+        }
+    }
 }
+
 
 export default UsersManager;

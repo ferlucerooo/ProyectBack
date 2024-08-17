@@ -20,8 +20,8 @@ router.get('/products', async (req,res)=>{
         const category = req.query.category ? { category: req.query.category } : {}; // Filtro por categoría
     
 
-        const result = await productManager.getProducts(limit, page, sort, query,{category, owner});
-        console.log(result);
+        const result = await productManager.getProducts(limit, page, sort, query,category, owner);
+        /* console.log(result); */
         res.render('products', {
             user: req.session.user,
             products: result.docs,
@@ -138,7 +138,7 @@ router.delete('/:pid', verifyToken,handlePolicies('admin'), async (req,res)=>{
 
     try{
         const pid = req.params.pid;
-        const deleteProduct = await productManager.deleteProduct(pid);
+        
         const product = await productManager.getProductById(pid);
 
         if (!product) {
@@ -149,6 +149,8 @@ router.delete('/:pid', verifyToken,handlePolicies('admin'), async (req,res)=>{
             return res.status(403).json({ message: 'No autorizado para eliminar este producto' });
         }
 
+        const deleteProduct = await productManager.deleteProduct(pid);
+        
         if(deleteProduct){
             res.json({payload: deleteProduct})
             console.log('Producto encontrado y eliminado');

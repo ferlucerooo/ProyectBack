@@ -1,8 +1,11 @@
 class UserDTO {
-    constructor({ id, name, email }) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
+    constructor(user) {
+        this.id = user._id.toString();
+        this.firstName = user.firstName;
+        this.lastName = user.lastName;
+        this.email = user.email;
+        this.password = user.password; // Asegúrate de incluir la contraseña si la necesitas
+        this.role = user.role;
     }
 }
 

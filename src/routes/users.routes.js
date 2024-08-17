@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import config from '../config.js';
 import UsersManager from '../controllers/usersManager.db.js';
-import { verifyRequiredBody } from '../services/utils.js';
+import { verifyRequiredBody, verifyToken, handlePolicies } from '../services/utils.js';
 
 const router = Router();
 const manager = new UsersManager();
@@ -119,4 +119,25 @@ router.post('/premium/:uid', async (req, res) => {
     }
 });
 
+router.put('/role/:id', verifyToken, handlePolicies('admin'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        if (role !== 'user' && role !== 'premium') {
+            return res.status(400).send({ origin: config.SERVER, payload: null, error: 'Rol inválido' });
+        }
+
+        const updatedUser = await manager.update({ _id: id }, { role });
+
+        if (!updatedUser) {
+            return res.status(404).send({ origin: config.SERVER, payload: null, error: 'Usuario no encontrado' });
+        }
+
+        res.status(200).send({ origin: config.SERVER, payload: updatedUser });
+    } catch (error) {
+        console.log('Error al actualizar el rol del usuario', error);
+        res.status(500).send({ origin: config.SERVER, payload: null, error: error.message });
+    }
+});
 export default router;

@@ -79,20 +79,32 @@ router.post('/register', verifyRequiredBody(['firstName', 'lastName', 'email', '
 router.post('/login',verifyRequiredBody(['email', 'password']), async (req, res) => {
     try {
     const { email, password } = req.body;
-    const foundUser = await manager.getOne({ email: email });
+    console.log('Datos recibidos:', { email, password });
 
-    if (foundUser && isValidPassword(password, foundUser.password)) {
+    const foundUser = await manager.getOne({ email: email });
+    console.log('Usuario encontrado:', foundUser);
+    
+
+   /*  if (foundUser && foundUser.password && isValidPassword(password, foundUser.password)) {
         // En lugar de armar req.session.user manualmente, aprovechamos el operador spread (...)
         // para quitar la password del objeto foundUser y utilizar lo demás
         const { password, ...filteredFoundUser } = foundUser;
         const token = createToken(filteredFoundUser, '1h');
             res.cookie(`${config.APP_NAME}_cookie`, token, { maxAge: 60 * 60 * 1000, httpOnly: true });
             res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' });
+             */
+            
+       /*  } else {
+            res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
+        } */
+
+/*  if (foundUser && isValidPassword(password, foundUser.password)) {
+            req.session.user = new UserDTO(foundUser); // Guardar datos del usuario en la sesión
+            res.redirect('/profile');
         } else {
             res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
         }
-
-
+ */
 
        /*  req.session.user = filteredFoundUser;
         req.session.save(err => {
@@ -104,8 +116,19 @@ router.post('/login',verifyRequiredBody(['email', 'password']), async (req, res)
         res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
     }*/
 
+        if (foundUser && isValidPassword(password, foundUser.password)) {
+            const { password, ...filteredFoundUser } = foundUser;
+            console.log('Usuario después de filtrar:', filteredFoundUser);
+
+            const token = createToken(filteredFoundUser, '1h');
+            res.cookie(`${config.APP_NAME}_cookie`, token, { maxAge: 60 * 60 * 1000, httpOnly: true });
+            res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' });
+        } else {
+            res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
+        }
 
 } catch (err) {
+    console.error('Error en el proceso de login:', err);
     res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
 }
 });
@@ -181,7 +204,7 @@ router.get('/logout', async (req, res) => {
 });
 
 // Ejemplo autenticación y autorización manual de admin
-router.get('/admin', verifyToken, handlePolicies(['admin', 'premium']), async (req, res) => {
+router.get('/admin', handlePolicies(['admin', 'premium']), async (req, res) => {
     try {
         res.status(200).send({ origin: config.SERVER, payload: 'Bienvenido ADMIN!' });
     } catch (err) {

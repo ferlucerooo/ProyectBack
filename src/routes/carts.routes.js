@@ -89,7 +89,13 @@ router.get('/:cid', async (req,res)=>{
 router.post('/:cid/product/:pid',async (req,res)=>{
     try{
         const {cid, pid}= req.params;
-        await cartManager.addProductToCart(cid, pid);
+        const user = req.user;
+
+        if (user.role === 'premium' && !await cartManager.isOwner(cid, user.id)) {
+            return res.status(403).json({ message: 'No autorizado para añadir productos a este carrito' });
+        }
+
+        await cartManager.addProductToCart(cid, pid, user);
         res.json({payload: `Producto con id ${pid} agregado al carrito ${cid}`});
     }catch(error){
         res.status(500).json({ error: error.message });

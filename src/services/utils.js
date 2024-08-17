@@ -6,6 +6,12 @@ import CustomError from './errors.js';
 export const createHash = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10));
 
 export const isValidPassword = (passwordToVerify, storedHash) => bcrypt.compareSync(passwordToVerify, storedHash);
+/* export const isValidPassword = (passwordToVerify, storedHash) => {
+    if (!passwordToVerify || !storedHash) {
+        throw new Error('Password and hash are required for comparison');
+    }
+    return bcrypt.compareSync(passwordToVerify, storedHash);
+}; */
 
 export const createToken = (payload, duration) => jwt.sign(payload, config.SECRET, { expiresIn: duration });
 
@@ -67,9 +73,10 @@ export const verifyDbConn = (req, res, next) => {
 
 export const handlePolicies = policies => {
     return async (req, res, next) => {
-        console.log(req.user);
-        if (!req.user) return res.status(401).send({ origin: config.SERVER, payload: 'Usuario no autenticado' });
-        if (policies.includes(req.user.role)) return next();
+        console.log(req.session.user);
+
+        if (!req.session.user) return res.status(401).send({ origin: config.SERVER, payload: 'Usuario no autenticado' });
+        if (policies.includes(req.session.user.role)) return next();
         res.status(403).send({ origin: config.SERVER, payload: 'No tiene permisos para acceder al recurso' });
     }
 }

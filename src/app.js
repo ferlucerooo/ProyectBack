@@ -82,7 +82,7 @@ if(cluster.isPrimary){
     app.use('/api/auth',authRouter);
     app.use('/loggerTest', loggerTest);
 
-    app.use(errorsHandler);
+    /* app.use(errorsHandler); */
     /* app.use('/api/test', new TestRouter().getRouter()); */
 
 
