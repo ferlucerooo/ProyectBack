@@ -11,6 +11,8 @@ import cors from 'cors';
 import addLogger from './services/logger.js'
 import cluster from 'cluster';
 import { cpus } from 'os';
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUiExpress from 'swagger-ui-express';
 
 
 
@@ -81,6 +83,26 @@ if(cluster.isPrimary){
     app.use('/api/cookies',cookiesRouter);
     app.use('/api/auth',authRouter);
     app.use('/loggerTest', loggerTest);
+
+
+
+    // Generamos objeto base config Swagger y levantamos
+// endpoint para servir la documentación
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.1',
+        info: {
+            title: 'Documentación sistema AdoptMe',
+            description: 'Esta documentación cubre toda la API habilitada para AdoptMe',
+        },
+    },
+    apis: ['./src/docs/**/*.yaml'], // todos los archivos de configuración de rutas estarán aquí
+};
+
+const specs = swaggerJSDoc(swaggerOptions);
+app.use('/api/docs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
+
+
 
     /* app.use(errorsHandler); */
     /* app.use('/api/test', new TestRouter().getRouter()); */

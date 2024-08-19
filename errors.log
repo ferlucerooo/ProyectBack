@@ -168,3 +168,12 @@
 {"level":"http","message":"Sat Aug 17 2024 GET /login","timestamp":"2024-08-17T04:39:38.036Z"}
 {"level":"http","message":"Sat Aug 17 2024 POST /api/auth/login","timestamp":"2024-08-17T04:39:55.895Z"}
 {"level":"http","message":"Sat Aug 17 2024 GET /api/users/resetpassword","timestamp":"2024-08-17T04:40:22.818Z"}
+{"level":"http","message":"Mon Aug 19 2024 GET /api/docs","timestamp":"2024-08-19T03:44:49.292Z"}
+{"level":"http","message":"Mon Aug 19 2024 GET /api/docs/","timestamp":"2024-08-19T03:44:49.301Z"}
+{"level":"http","message":"Mon Aug 19 2024 GET /api/docs/swagger-ui.css","timestamp":"2024-08-19T03:44:49.343Z"}
+{"level":"http","message":"Mon Aug 19 2024 GET /api/docs/swagger-ui-bundle.js","timestamp":"2024-08-19T03:44:49.352Z"}
+{"level":"http","message":"Mon Aug 19 2024 GET /api/docs/swagger-ui-standalone-preset.js","timestamp":"2024-08-19T03:44:49.364Z"}
+{"level":"http","message":"Mon Aug 19 2024 GET /api/docs/swagger-ui-init.js","timestamp":"2024-08-19T03:44:49.365Z"}
+{"level":"http","message":"Mon Aug 19 2024 GET /api/docs/favicon-32x32.png","timestamp":"2024-08-19T03:44:49.614Z"}
+{"level":"http","message":"Mon Aug 19 2024 GET /api/carts","timestamp":"2024-08-19T03:45:25.619Z"}
+{"level":"http","message":"Mon Aug 19 2024 GET /api/products","timestamp":"2024-08-19T03:45:44.589Z"}
