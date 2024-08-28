@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 mongoose.pluralize(null);
-
-const collection = 'users';
+//se cambio la collection para hacer los test
+const collection = 'users_test';
 
 const schema = new mongoose.Schema({
     firstName: { type: String, required: true },

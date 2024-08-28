@@ -220,6 +220,16 @@ router.get('/ppadmin', passportCall('jwtlogin'), verifyAuthorization('admin'), a
     }
 });
 
+router.get('/current', async (req, res) => {
+    try {
+        const token = req.cookies[`${config.APP_NAME}_cookie`];
+        if (!token) return res.status(401).send({ origin: config.SERVER, payload: 'No autenticado' });
 
+        const user = verifyToken(token);
+        res.status(200).send({ origin: config.SERVER, payload: user });
+    } catch (err) {
+        res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+    }
+});
 
 export default router;
