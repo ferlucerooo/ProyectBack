@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --env-file .env src/app",
-    "prod": "node --env-file .env.prod src/app"
+    "prod": "node --env-file .env.prod src/app",
+    "supertest": "mocha test/sessionSuper.test.js",
+    "test": "mocha test/userManager.test.js"
   },
   "keywords": [],
   "author": "",

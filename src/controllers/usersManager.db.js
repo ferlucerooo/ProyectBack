@@ -18,27 +18,42 @@ class UsersManager {
     };
 
     getById = async (id) => {
-        try {
+        /* try {
             const user = await usersModel.findById(id).lean();
             return user ? new UserDTO(user) : null;
         } catch (err) {
             return err.message;
-        };
+        }; */
+        try {
+            const user = await usersModel.findById(id).lean();
+            if (!user) throw new Error('Usuario no encontrado');  // Lanza un error si el usuario no se encuentra
+            return new UserDTO(user);
+        } catch (err) {
+            throw new Error(err.message);  // Maneja errores correctamente
+        }
+
     };
 
     getOne = async (filter) => {
-        try {
+        /* try {
             const user = await usersModel.findOne(filter).lean();
             if (user) {
                 console.log('Usuario desde DB:', user); // Verifica qué campos está devolviendo la DB
                 return new UserDTO(user);
             }
             return null; // Retorna null si no se encuentra el usuario
-           /*  const user = await usersModel.findOne(filter).lean();
-            return user ? new UserDTO(user) : null; */
         } catch (err) {
             return err.message;
-        };
+        }; */
+        try {
+            const user = await usersModel.findOne(filter).lean();
+            if (!user) throw new Error('Usuario no encontrado');
+            return new UserDTO(user);
+        } catch (err) {
+            throw err.message;
+        }
+
+
     };
 
     getAggregated = async (match, group, sort) => {
@@ -64,29 +79,53 @@ class UsersManager {
     };
 
     add = async (newData) => {
+
         try {
+            const createdUser = await usersModel.create(newData);
+            return new UserDTO(createdUser);  // Asegúrate de retornar un objeto de usuario
+        } catch (err) {
+            throw new Error(err.message); 
+        }
+        /* try {
             return await usersModel.create(newData);
         } catch (err) {
             return err.message;
-        };
+        }; */
     };
 
     update = async (filter, update, options) => {
-        try {
+       /*  try {
             const user = await usersModel.findOneAndUpdate(filter, update, options).lean();
             return user ? new UserDTO(user) : null;
         } catch (err) {
             return err.message;
-        };
+        }; */
+        try {
+            const user = await usersModel.findOneAndUpdate(filter, update, { new: true }).lean();
+            if (!user) throw new Error('Usuario no encontrado');
+            return new UserDTO(user);
+        } catch (err) {
+            throw err.message;
+        }
+
+
     };
 
     delete = async (filter) => {
-        try {
+        /* try {
             const user = await usersModel.findOneAndDelete(filter).lean();
             return user ? new UserDTO(user) : null;
         } catch (err) {
             return err.message;
-        };
+        }; */
+
+        try {
+            const user = await usersModel.findOneAndDelete(filter).lean();
+            if (!user) throw new Error('Usuario no encontrado');
+            return new UserDTO(user);
+        } catch (err) {
+            throw err.message;
+        }
     };
 
     generateResetLink = async (email) => {

@@ -13,33 +13,51 @@ let cookie = {};
 describe('Test Integración Users', function () {
 
     it('POST /api/auth/register debe registrar un nuevo usuario', async function () {
-        const { _body }  = await requester.post('/api/auth/register').send(testUser);
+        const response = await requester.post('/api/auth/register').send(testUser);
+        const { statusCode, body } = response;
 
-        expect(_body.error).to.be.undefined;
-        expect(_body.payload).to.be.ok;
+        console.log('Registro Response:', body);
+
+        expect(statusCode).to.equal(200);
+        expect(body.error).to.be.undefined;
+        expect(body.payload).to.be.ok;
     });
 
     it('POST /api/auth/register NO debe volver a registrar el mismo mail', async function () {
-        const { statusCode, _body }  = await requester.post('/api/auth/register').send(testUser);
+        const response = await requester.post('/api/auth/register').send(testUser);
+        const { statusCode, body } = response;
 
-        expect(statusCode).to.be.equals(400);
+        console.log('Registro Duplicado Response:', body);
+
+        expect(statusCode).to.equal(400);
+        expect(body.error).to.be.ok;
+        expect(body.payload).to.equal('El email ya se encuentra registrado');
     });
 
     it('POST /api/auth/login debe ingresar correctamente al usuario', async function () {
-        const result  = await requester.post('/api/auth/login').send(testUser);
-        const cookieData = result.headers['set-cookie'][0];
+        const response = await requester.post('/api/auth/login').send(testUser);
+        const { statusCode, headers } = response;
+
+        console.log('Login Response:', response.body);
+
+        const cookieData = headers['set-cookie'] ? headers['set-cookie'][0] : '';
         cookie = { name: cookieData.split('=')[0], value: cookieData.split('=')[1] };
 
+        expect(statusCode).to.equal(200);
         expect(cookieData).to.be.ok;
-        expect(cookie.name).to.be.equals('coderCookie');
+        expect(cookie.name).to.equal('coderCookie');
         expect(cookie.value).to.be.ok;
     });
 
-    it('GET /api/auth/current debe retornar datos correctos de usuario', async function () {
-        const { _body } = await requester.get('/api/sessions/current').set('Cookie', [`${cookie.name}=${cookie.value}`]);
+    it('GET /api/sessions/current debe retornar datos correctos de usuario', async function () {
+        const response = await requester.get('/api/sessions/current').set('Cookie', [`${cookie.name}=${cookie.value}`]);
+        const { statusCode, body } = response;
 
-        expect(_body.payload).to.have.property('name');
-        expect(_body.payload).to.have.property('role');        
-        expect(_body.payload).to.have.property('email').and.to.be.eql(testUser.email);
+        console.log('Current Session Response:', body);
+
+        expect(statusCode).to.equal(200);
+        expect(body.payload).to.have.property('name');
+        expect(body.payload).to.have.property('role');        
+        expect(body.payload).to.have.property('email').and.to.equal(testUser.email);
     });
 });
