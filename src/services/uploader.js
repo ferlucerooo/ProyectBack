@@ -1,18 +1,11 @@
-/**
- * Una rutina simple para subida de archivos, utilizando
- * Multer (https://www.npmjs.com/package/multer).
- * 
- * Aquí vemos la comodidad de tener un repositorio central
- * de configuraciones, si más adelante deseamos modificar
- * la ruta de subida, no tocaremos esta rutina.
- */
-
+import path from 'path';
 import multer from 'multer';
-import config from './config.js';
+import config from '../config.js';
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, config.UPLOAD_DIR);
+        const subFolder = path.basename(req.path);
+        cb(null, `${config.UPLOAD_DIR}/${subFolder}/`);
     },
 
     filename: (req, file, cb) => {
@@ -25,7 +18,7 @@ const storage = multer.diskStorage({
          * const originalExtension = path.extname(file.originalname);
          * cb(null, `${now}_${originalName}.${originalExtension}`);
          */
-        cb(null, file.originalname);
+        cb(null, `${Date.now()}-${file.originalname}`);
     }
 });
 

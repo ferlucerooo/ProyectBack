@@ -19,4 +19,7 @@
             <p>No hay productos en el carrito</p>
         {{/if}}
     </ul>
+    <form action="/api/carts/{{cartId}}/purchase" method="POST">
+        <button type="submit">Finalizar Compra</button>
+    </form>
 </div>

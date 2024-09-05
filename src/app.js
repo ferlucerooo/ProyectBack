@@ -31,6 +31,7 @@ import loggerTest from './routes/loggerTest.routes.js'
 /* import TestRouter from './routes/test.router.js'; */
 import MongoSingleton from './services/mongo.singleton.js';
 import { errorsHandler } from './services/utils.js';
+import uploadRouter from './routes/uploads.routes.js'
 
 
 
@@ -83,6 +84,7 @@ if(cluster.isPrimary){
     app.use('/api/cookies',cookiesRouter);
     app.use('/api/auth',authRouter);
     app.use('/loggerTest', loggerTest);
+    app.use('/uploader', uploadRouter);
 
 
 

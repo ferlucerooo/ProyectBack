@@ -13,10 +13,13 @@ const schema = new mongoose.Schema({
     role: { type: String, enum: ['admin', 'premium', 'user'], default: 'user' },
     resetToken: String,
     resetTokenExpiration: Date,
-    // Las propiedades grade y region las colocamos para probar el uso de aggregate,
-    // deshabilitarlas al testear el paginado con la otra colección
-   /*  grade: { type: Number, required: true },
-    region: { type: String, enum: ['Cordoba', 'Buenos Aires', 'Tucuman', 'Mendoza', 'Rosario'], default: 'Cordoba' } */
+    documents:[
+        {
+            name:{type: String, required: true},
+            reference:{type: String, required: true},
+        }
+    ],
+    lastConnection: {type: Date},  // aca almacenamos la ultima coneccion
 });
 
 schema.plugin(mongoosePaginate);

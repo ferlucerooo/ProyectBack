@@ -83,49 +83,19 @@ router.post('/login',verifyRequiredBody(['email', 'password']), async (req, res)
 
     const foundUser = await manager.getOne({ email: email });
     console.log('Usuario encontrado:', foundUser);
-    
 
-   /*  if (foundUser && foundUser.password && isValidPassword(password, foundUser.password)) {
-        // En lugar de armar req.session.user manualmente, aprovechamos el operador spread (...)
-        // para quitar la password del objeto foundUser y utilizar lo demás
+    if (foundUser && isValidPassword(password, foundUser.password)) {
+        // Actualiza el último inicio de sesión
+        foundUser.lastConnection = new Date();
+        await manager.update({ email: foundUser.email }, { lastConnection: foundUser.lastConnection });
+    
         const { password, ...filteredFoundUser } = foundUser;
         const token = createToken(filteredFoundUser, '1h');
-            res.cookie(`${config.APP_NAME}_cookie`, token, { maxAge: 60 * 60 * 1000, httpOnly: true });
-            res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' });
-             */
-            
-       /*  } else {
-            res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
-        } */
-
-/*  if (foundUser && isValidPassword(password, foundUser.password)) {
-            req.session.user = new UserDTO(foundUser); // Guardar datos del usuario en la sesión
-            res.redirect('/profile');
-        } else {
-            res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
-        }
- */
-
-       /*  req.session.user = filteredFoundUser;
-        req.session.save(err => {
-            if (err) return res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
-
-            res.redirect('/profile'); 
-        });
+        res.cookie(`${config.APP_NAME}_cookie`, token, { maxAge: 60 * 60 * 1000, httpOnly: true });
+        res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' });
     } else {
         res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
-    }*/
-
-        if (foundUser && isValidPassword(password, foundUser.password)) {
-            const { password, ...filteredFoundUser } = foundUser;
-            console.log('Usuario después de filtrar:', filteredFoundUser);
-
-            const token = createToken(filteredFoundUser, '1h');
-            res.cookie(`${config.APP_NAME}_cookie`, token, { maxAge: 60 * 60 * 1000, httpOnly: true });
-            res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' });
-        } else {
-            res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
-        }
+    }
 
 } catch (err) {
     console.error('Error en el proceso de login:', err);

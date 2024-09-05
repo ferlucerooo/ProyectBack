@@ -4,8 +4,9 @@ class UserDTO {
         this.firstName = user.firstName;
         this.lastName = user.lastName;
         this.email = user.email;
-        this.password = user.password; // Asegúrate de incluir la contraseña si la necesitas
+        this.password = user.password;
         this.role = user.role;
+        this.lastConnection = user.lastConnection; 
     }
 }
 

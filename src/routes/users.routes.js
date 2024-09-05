@@ -3,6 +3,7 @@ import { Router } from 'express';
 import config from '../config.js';
 import UsersManager from '../controllers/usersManager.db.js';
 import { verifyRequiredBody, verifyToken, handlePolicies } from '../services/utils.js';
+import { uploader } from '../services/uploader.js';
 
 const router = Router();
 const manager = new UsersManager();
@@ -109,6 +110,14 @@ router.post('/premium/:uid', async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+        const requiredDocuments = ['Identificacion', 'Comprobante de domicilio', 'Comprobante de estado de cuenta']
+
+        const uploadedDocuments = user.documents.map(doc => doc.name);
+        const hasAllDocuments = requiredDocuments.every(doc => uploadedDocuments.includes(doc));
+
+        if(!hasAllDocuments){
+            return res.status(400).json({message: 'User has not uploaded all required documents'})
+        }
 
         user.role = user.role === 'user' ? 'premium' : 'user';
         await user.save();
@@ -140,4 +149,67 @@ router.put('/role/:id', verifyToken, handlePolicies('admin'), async (req, res) =
         res.status(500).send({ origin: config.SERVER, payload: null, error: error.message });
     }
 });
+
+
+
+//subida de imagenes, archivos con multer
+router.post('/:uid/documents', uploader.array('documents', 3), async (req,res)=>{
+    try{
+
+        const {uid} = req.params;
+        const user = await manager.getById(uid);
+
+        if(!user){
+            return res.status(404).json({message: 'User not found'});
+        }
+
+        const uploadedFiles = req.files.map(file => ({
+            name: file.originalname,
+            reference: `${config.UPLOAD_DIR}/documents/${file.filename}`
+        }));
+
+        user.documents = user.documents.concat(uploadedFiles);
+        await user.save();
+
+        res.status(200).json({message: 'Documents uploaded successfully', documents: user.documents});
+    } catch (error){
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.post('/profiles', uploader.array('profilesImages', 3), (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).send({ message: 'No files uploaded' });
+        }
+        
+        const uploadedFiles = req.files.map(file => ({
+            name: file.originalname,
+            reference: `${config.UPLOAD_DIR}/profiles/${file.filename}`
+        }));
+
+        res.status(200).send({ status: 'success', message: 'Profile images uploaded', files: uploadedFiles });
+    } catch (error) {
+        res.status(500).send({ status: 'error', message: error.message });
+    }
+});
+
+router.post('/products', uploader.array('productImages', 3), (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).send({ message: 'No files uploaded' });
+        }
+        
+        const uploadedFiles = req.files.map(file => ({
+            name: file.originalname,
+            reference: `${config.UPLOAD_DIR}/products/${file.filename}`
+        }));
+
+        res.status(200).send({ status: 'success', message: 'Product images uploaded', files: uploadedFiles });
+    } catch (error) {
+        res.status(500).send({ status: 'error', message: error.message });
+    }
+});
+
+
 export default router;

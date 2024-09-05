@@ -93,7 +93,7 @@ class UsersManager {
         }; */
     };
 
-    update = async (filter, update, options) => {
+    update = async (filter, update) => {
        /*  try {
             const user = await usersModel.findOneAndUpdate(filter, update, options).lean();
             return user ? new UserDTO(user) : null;
