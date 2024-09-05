@@ -106,7 +106,7 @@ app.use('/api/docs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
 
 
 
-    /* app.use(errorsHandler); */
+    app.use(errorsHandler);
     /* app.use('/api/test', new TestRouter().getRouter()); */
 
 

@@ -6,12 +6,22 @@ class ProductManagerDB {
     constructor(){
         this.products = [];
     }
-    static getInstance(){
+    /* static getInstance(){
         if(!ProductManagerDB.#instance){
             ProductManagerDB.#instance = new ProductManagerDB();
         }
         return ProductManagerDB.#instance;
-    }
+    } */
+
+        static getInstance() {
+            if (!this.#instance) {
+                this.#instance = new ProductManagerDB();
+                console.log('Instancia de ProductManagerDB creada');
+            } else {
+                console.log('Instancia de ProductManagerDB reutilizada');
+            }
+            return this.#instance;
+        }
 
     async getProducts(limit = 5, page = 1, sort = null, query = {}, category = {}) {
         try {
@@ -47,7 +57,7 @@ class ProductManagerDB {
     }
 async getProductById(id){
     try{
-        const product = await productModel.findById(id).lean();
+        const product = await productModel.findById(id);
         if(!product){
             throw new Error(`No se encontro el producto con id ${id}`);
         }

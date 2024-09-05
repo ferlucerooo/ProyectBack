@@ -55,12 +55,12 @@ router.get('/carts/:cid', async (req,res)=>{
         console.log(cid);
 
         const cart = await cartManager.getCartById((cid));
-        console.log('Cart:', JSON.stringify(cart, null, 2));
+        //console.log('Cart:', JSON.stringify(cart, null, 2));
 
         if(!cart){
             return res.status(404).send('Carrito no encontrado');
         }
-        res.render('cart', { cart: cart.products });
+        res.render('cart', { cart: cart.products, cid:cid });
     }catch(error){
         console.log('Error al obtener el carrito', error);
         res.status(500).json({ error: error.message });
@@ -152,11 +152,12 @@ router.put('/:cid/product/:pid', async (req,res)=>{
 })
 
 router.post('/:cid/purchase', handlePolicies('user'), async (req, res) => {
-    const cartId = req.params.cid;
-    const purchaserEmail = req.user.email; 
+    const cid = req.params.cid;
+    console.log('Cart ID:', cid);
+    const purchaserEmail = req.session.user.email; 
 
     try {
-        const result = await cartManager.purchaseCart(cartId, purchaserEmail);
+        const result = await cartManager.purchaseCart(cid,purchaserEmail );
         res.json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });

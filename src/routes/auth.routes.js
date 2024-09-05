@@ -88,11 +88,22 @@ router.post('/login',verifyRequiredBody(['email', 'password']), async (req, res)
         // Actualiza el último inicio de sesión
         foundUser.lastConnection = new Date();
         await manager.update({ email: foundUser.email }, { lastConnection: foundUser.lastConnection });
-    
-        const { password, ...filteredFoundUser } = foundUser;
+        // session
+
+        req.session.user = {
+            id: foundUser.id,
+            firstName: foundUser.firstName,
+            lastName: foundUser.lastName,
+            email: foundUser.email,
+            role: foundUser.role
+        };
+        res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' });
+
+    // jwt- cookie
+        /* const { password, ...filteredFoundUser } = foundUser;
         const token = createToken(filteredFoundUser, '1h');
         res.cookie(`${config.APP_NAME}_cookie`, token, { maxAge: 60 * 60 * 1000, httpOnly: true });
-        res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' });
+        res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' }); */
     } else {
         res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
     }

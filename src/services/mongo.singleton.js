@@ -9,7 +9,13 @@ export default class MongoSingleton {
     }
     
     async connect() {
-        await mongoose.connect(config.MONGODB_URI);
+        //await mongoose.connect(config.MONGODB_URI);
+        try {
+            await mongoose.connect(config.MONGODB_URI);
+        } catch (error) {
+            //console.error('Error al conectar a la base de datos:', error);
+            throw error; // Propaga el error si es necesario
+        }
     }
 
     static getInstance() {

@@ -1,8 +1,11 @@
 import cartModel from "../models/cart.model.js";
-import ProductManagerDB from "../models/products.model.js";
+//import ProductManagerDB from "../models/products.model.js";
 import Ticket from '../models/ticket.model.js'
 import CustomError from '../services/errors.js';
 import { errorsDictionary } from '../config.js';
+import ProductManagerDB from '../controllers/productManager.db.js';
+import productModel from '../models/products.model.js';
+import { v4 as uuidv4 } from 'uuid';
 
 class CartManagerDB{
     static #instace;
@@ -29,7 +32,7 @@ class CartManagerDB{
             const cart = await cartModel.findOne({_id: id}).populate('products.productId').lean();
 
             if(!cart){
-                throw new CustomError(errorsDictionary.NOT_FOUND, `No se encontró el carrito con el ID ${id}`);
+                throw new CustomError(errorsDictionary.ID_NOT_FOUND, `No se encontró el carrito con el ID ${id}`);
             }
             return cart;
         }catch(error){
@@ -278,35 +281,38 @@ class CartManagerDB{
             if (!cart) {
                 throw new CustomError(errorsDictionary.NOT_FOUND, 'Carrito no encontrado');
             }
-
+    
             let totalAmount = 0;
             const purchasedProducts = [];
             const failedProducts = [];
-
+    
             for (const item of cart.products) {
                 const product = await ProductManagerDB.getInstance().getProductById(item.productId);
                 if (product.stock >= item.quantity) {
-                    product.stock -= item.quantity;
-                    await product.save();
+                    const newStock = product.stock - item.quantity;
+    
+                    // Actualiza el stock del producto
+                    await productModel.findByIdAndUpdate(product._id, { stock: newStock });
+    
                     totalAmount += product.price * item.quantity;
                     purchasedProducts.push(item.productId);
                 } else {
                     failedProducts.push(item.productId);
                 }
             }
-
+    
             const ticket = new Ticket({
                 code: uuidv4(),
                 amount: totalAmount,
                 purchaser: purchaserEmail,
             });
-
+    
             await ticket.save();
-
-            // Filtrar los productos comprados del carrito
+    
+            // Filtra los productos comprados del carrito
             cart.products = cart.products.filter(item => !purchasedProducts.includes(item.productId));
             await cartModel.updateOne({ _id: cartId }, { products: cart.products });
-
+    
             return {
                 message: 'Compra completada',
                 ticket,

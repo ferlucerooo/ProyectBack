@@ -73,8 +73,7 @@ export const verifyDbConn = (req, res, next) => {
 
 export const handlePolicies = policies => {
     return async (req, res, next) => {
-        console.log(req.session.user);
-
+        console.log('Sesión en middleware:', req.session.user);
         if (!req.session.user) return res.status(401).send({ origin: config.SERVER, payload: 'Usuario no autenticado' });
         if (policies.includes(req.session.user.role)) return next();
         res.status(403).send({ origin: config.SERVER, payload: 'No tiene permisos para acceder al recurso' });
