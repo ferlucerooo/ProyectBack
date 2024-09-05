@@ -3,7 +3,7 @@ import config from "../config.js";
 import { isValidPassword, verifyRequiredBody, createHash, createToken, verifyToken, handlePolicies } from "../services/utils.js";
 import passport from "passport";
 import initAuthStrategies, { passportCall }  from "../auth/passaport.strategies.js";
-import usersManager from '../controllers/usersManager.db.js'
+import usersManager from '../controllers/usersManager.db.js';
 
 
 
@@ -76,42 +76,40 @@ router.post('/register', verifyRequiredBody(['firstName', 'lastName', 'email', '
 
 
 // login
-router.post('/login',verifyRequiredBody(['email', 'password']), async (req, res) => {
+
+router.post('/login', verifyRequiredBody(['email', 'password']), async (req, res) => {
     try {
-    const { email, password } = req.body;
-    console.log('Datos recibidos:', { email, password });
+        const { email, password } = req.body;
+        const foundUser = await manager.getOne({ email: email });
+        console.log('Usuario encontrado:', foundUser);
 
-    const foundUser = await manager.getOne({ email: email });
-    console.log('Usuario encontrado:', foundUser);
+        if (foundUser && isValidPassword(password, foundUser.password)) {
+            // Actualiza el último inicio de sesión
+            foundUser.lastConnection = new Date();
+            await manager.update({ email: foundUser.email }, { lastConnection: foundUser.lastConnection });
 
-    if (foundUser && isValidPassword(password, foundUser.password)) {
-        // Actualiza el último inicio de sesión
-        foundUser.lastConnection = new Date();
-        await manager.update({ email: foundUser.email }, { lastConnection: foundUser.lastConnection });
-        // session
+             // Establece la sesión del usuario
+             req.session.user = {
+                id: foundUser.id,
+                firstName: foundUser.firstName,
+                lastName: foundUser.lastName,
+                email: foundUser.email,
+                role: foundUser.role
+            };
 
-        req.session.user = {
-            id: foundUser.id,
-            firstName: foundUser.firstName,
-            lastName: foundUser.lastName,
-            email: foundUser.email,
-            role: foundUser.role
-        };
-        res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' });
 
-    // jwt- cookie
-        /* const { password, ...filteredFoundUser } = foundUser;
-        const token = createToken(filteredFoundUser, '1h');
-        res.cookie(`${config.APP_NAME}_cookie`, token, { maxAge: 60 * 60 * 1000, httpOnly: true });
-        res.status(200).send({ origin: config.SERVER, payload: 'Usuario autenticado' }); */
-    } else {
-        res.status(401).send({ origin: config.SERVER, payload: 'Datos de acceso no válidos' });
+            const { password: userPassword, ...userData } = foundUser;
+            const token = createToken(userData, '1h');
+            res.status(200).json({ origin: config.SERVER, payload: 'Usuario autenticado',token });
+
+            // Renderiza la vista de productos
+            //res.render('/api/products/products', { user: req.session.user, token: token });
+        } else {
+            res.status(401).json({ error: 'Datos de acceso no válidos' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-} catch (err) {
-    console.error('Error en el proceso de login:', err);
-    res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
-}
 });
 
 

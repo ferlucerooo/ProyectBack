@@ -1,6 +1,6 @@
 import { Router } from "express";
 import CartManagerDB from "../controllers/cartManager.db.js";
-import { handlePolicies } from "../services/utils.js";
+import { handlePolicies, authMiddleware, verifyToken } from "../services/utils.js";
 import nodemailer from 'nodemailer';
 import config from "../config.js";
 
@@ -41,6 +41,9 @@ router.get('/mail', async (req, res) => {
 router.post('/',async (req,res)=> {
     try{
         const cart = await cartManager.createCart();
+
+        console.log('Datos de la sesión después de crear el carrito:', req.session);
+
         res.json(cart);
         console.log('Carrito creado');
     }catch(error){
@@ -52,7 +55,7 @@ router.post('/',async (req,res)=> {
 router.get('/carts/:cid', async (req,res)=>{
     try{
         const cid = req.params.cid;
-        console.log(cid);
+        console.log('ID del carrito:', cid);
 
         const cart = await cartManager.getCartById((cid));
         //console.log('Cart:', JSON.stringify(cart, null, 2));
@@ -60,6 +63,8 @@ router.get('/carts/:cid', async (req,res)=>{
         if(!cart){
             return res.status(404).send('Carrito no encontrado');
         }
+
+        console.log('Datos del carrito:', JSON.stringify(cart, null, 2));
         res.render('cart', { cart: cart.products, cid:cid });
     }catch(error){
         console.log('Error al obtener el carrito', error);
@@ -86,21 +91,38 @@ router.get('/:cid', async (req,res)=>{
     }
 });
 
-router.post('/:cid/product/:pid',async (req,res)=>{
-    try{
-        const {cid, pid}= req.params;
+router.post('/:cid/product/:pid',verifyToken, async (req, res) => {
+    try {
+        const { cid, pid } = req.params;
         const user = req.user;
 
-        if (user.role === 'premium' && !await cartManager.isOwner(cid, user.id)) {
-            return res.status(403).json({ message: 'No autorizado para añadir productos a este carrito' });
+        // Asegúrate de que `req.user` está definido y tiene la propiedad `role`
+        if (!user) {
+            return res.status(401).json({ error: 'Usuario no autenticado' });
         }
 
-        await cartManager.addProductToCart(cid, pid, user);
-        res.json({payload: `Producto con id ${pid} agregado al carrito ${cid}`});
-    }catch(error){
+        if (!user.role) {
+            return res.status(400).json({ error: 'Rol de usuario no disponible' });
+        }
+
+        // Verifica el rol del usuario
+        if (user.role === 'admin') {
+            // Lógica para agregar el producto al carrito (para admin)
+        } else if (user.role === 'user') {
+            // Verifica si el usuario es el dueño del producto antes de agregarlo
+            if (!await cartManager.getCartById(cid, user._id)) {
+                return res.status(403).json({ error: 'No autorizado para añadir productos a este carrito' });
+            }
+        } else {
+            return res.status(403).json({ error: 'Rol de usuario no permitido' });
+        }
+
+        const result = await cartManager.addProductToCart(cid, pid, user); // Asegúrate de pasar los parámetros correctos
+        res.json(result);
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
-})
+});
 
 router.delete('/:cid/product/:pid', async (req,res)=>{
     try{
@@ -152,6 +174,7 @@ router.put('/:cid/product/:pid', async (req,res)=>{
 })
 
 router.post('/:cid/purchase', handlePolicies('user'), async (req, res) => {
+    console.log('Sesión en middleware:', req.session.user);
     const cid = req.params.cid;
     console.log('Cart ID:', cid);
     const purchaserEmail = req.session.user.email; 
@@ -164,4 +187,22 @@ router.post('/:cid/purchase', handlePolicies('user'), async (req, res) => {
     }
 });
 
+
+
+router.get('/current',authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user._id; // Asegúrate de que req.user tenga el ID del usuario
+        console.log('ID del usuario:', userId); // Depuración
+        const cart = await cartManager.getCartById(userId); // Cambia esto si es necesario para buscar por usuario
+
+        if (!cart) {
+            return res.status(404).json({ message: 'Carrito no encontrado' });
+        }
+
+        res.json({ cartId: cart._id });
+    } catch (error) {
+        console.error('Error al obtener el carrito:', error); // Depuración
+        res.status(500).json({ message: 'Error al obtener el carrito' });
+    }
+});
 export default router;

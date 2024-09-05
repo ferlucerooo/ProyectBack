@@ -61,10 +61,11 @@ if(cluster.isPrimary){
             mongoUrl: config.MONGODB_URI,
             ttl: 15 //segundos time to live
         }), */
-        store: new fileStorage ({path: './auth', ttl:100, retries:0}),
+        store: new fileStorage ({path: './auth', ttl:3600, retries:0}),
         secret:config.SECRET,
         resave: true,
-        saveUninitialized: true
+        saveUninitialized: true,
+        cookie: { secure: false, maxAge: 1000 * 60 * 60 } 
     }))
 
     app.use(passport.initialize());

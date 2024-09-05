@@ -90,3 +90,40 @@ export const errorsHandler = (error, req, res, next) => {
     return res.status(customErr.status).send({ origin: config.SERVER, payload: '', error: customErr.message });
 }
 
+export function authMiddleware(req, res, next) {
+    // Simulación de autenticación: reemplaza con tu lógica real
+    const token = req.headers['authorization'];
+    if (!token) {
+        return res.status(401).json({ error: 'No autorizado' });
+    }
+
+    // Verificación y extracción del usuario del token
+    // Ejemplo:
+    // const user = await User.findByToken(token);
+    const user = { _id: 'someUserId', role: 'user' }; // Simulación
+
+    if (!user) {
+        return res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+
+    req.user = user;
+    next();
+}
+
+
+
+/* function authMiddleware(req, res, next) {
+    if (req.session && req.session.userId) {
+        req.user = { _id: req.session.userId }; // Extrae el ID del usuario de la sesión
+        return next();
+    } else {
+        return res.redirect('/login'); // Redirige al login si la sesión no es válida
+    }
+} */
+
+/* function authMiddleware(req, res, next) {
+    // Lógica de autenticación
+    // Aquí deberías obtener el ID real del usuario, por ejemplo, de un token JWT
+    req.user = { _id: 'someUserId' }; // Reemplaza con el ID real del usuario obtenido
+    next();
+} */
