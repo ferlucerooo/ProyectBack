@@ -5,6 +5,11 @@ const collection = 'carts';
 
 
 const Schema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users', //  modelo de usuario se llama 'users'
+        required: true
+    },
     products:{
         type:[
             {

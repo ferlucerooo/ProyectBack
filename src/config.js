@@ -35,6 +35,7 @@ const config = {
     TWILIO_TOKEN: process.env.TWILIO_TOKEN,
     TWILIO_PHONE: process.env.TWILIO_PHONE,
     MODE: process.env.MODE,
+    //JWT_SECRET: process.env.JWT_SECRET,
 }
 
 export const errorsDictionary = {

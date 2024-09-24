@@ -6,6 +6,7 @@ import { errorsDictionary } from '../config.js';
 import ProductManagerDB from '../controllers/productManager.db.js';
 import productModel from '../models/products.model.js';
 import { v4 as uuidv4 } from 'uuid';
+import mongoose from "mongoose";
 
 class CartManagerDB{
     static #instace;
@@ -51,16 +52,45 @@ class CartManagerDB{
         return await this.cartModel.findOne({ userId: userId });
     } */
 
-    async createCart(){
-        try{
-            const cart = await cartModel.create({});
-
-            if(!cart){
-                throw new CustomError(errorsDictionary.CREATE_ERROR, 'No se pudo crear el carrito');
+        async getCartByUserId(userId) {
+            try {
+                const cart = await cartModel.findOne({ userId }).populate('products.productId').lean();
+                if (!cart) {
+                    throw new CustomError(errorsDictionary.ID_NOT_FOUND, `No se encontró un carrito para el usuario con ID ${userId}`);
+                }
+                return cart;
+            } catch (error) {
+                throw error;
             }
+        }
 
-            return cart;
+    async createCart(userId){
+        try{
+            /* if (!mongoose.Types.ObjectId.isValid(userId)) {
+                throw new CustomError('El ID del usuario no es un ObjectId válido');
+            } */
+
+            console.log('Creando carrito para el usuario:', userId);
+            const cart = await cartModel.create({ 
+                userId: new mongoose.Types.ObjectId(userId),  // Aquí se convierte el userId
+                products: []
+            });
+        //const cart = await cartModel.create({ userId: mongoose.Types.ObjectId(userId), products: [] });
+        /* const cart = await cartModel.create({
+            userId: new mongoose.Types.ObjectId(userId), // Asegúrate de usar "new" aquí
+            products: []
+        }); */
+
+        if (!cart) {
+            throw new CustomError(errorsDictionary.CREATE_ERROR, 'No se pudo crear el carrito');
+        }
+
+        console.log('Carrito creado correctamente:', cart);
+        return cart;
+
+        
         }catch(error){
+            console.error('Error en createCart:', error);
             throw error;
         }
     }

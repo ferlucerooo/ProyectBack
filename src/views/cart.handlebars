@@ -1,7 +1,11 @@
+
+<div class="go-back-btn"></div>
+    <a  class="go-back-btn" href="/api/products/products">Volver</a>
+
 <div>
     <h1>Productos en el Carrito</h1>
     <ul class="list-group" id="cart-products">
-        {{#if cart}}
+        {{#if cart.length}}
             {{#each cart}}
                 <li class="list-group-item">
                     <h3>{{this.productId.title}}</h3>
@@ -23,3 +27,5 @@
         <button type="submit">Finalizar Compra</button>
     </form>
 </div>
+
+<script src="/static/js/products.js"></script>

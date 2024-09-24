@@ -13,7 +13,8 @@ import cluster from 'cluster';
 import { cpus } from 'os';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUiExpress from 'swagger-ui-express';
-
+import MongoStore from 'connect-mongo';
+import initAuthStrategies  from "./auth/passaport.strategies.js";
 
 
 /* import MongoStore from 'connect-mongo'; */
@@ -70,6 +71,7 @@ if(cluster.isPrimary){
 
     app.use(passport.initialize());
     app.use(passport.session());
+    
 // motor de plantillas
     app.engine('handlebars', handlebars.engine());
     app.set('views', `${config.DIRNAME}/views`);
@@ -107,7 +109,7 @@ app.use('/api/docs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
 
 
 
-    app.use(errorsHandler);
+    //app.use(errorsHandler);
     /* app.use('/api/test', new TestRouter().getRouter()); */
 
 

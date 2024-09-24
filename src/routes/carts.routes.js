@@ -38,21 +38,26 @@ router.get('/mail', async (req, res) => {
     }
 });
 
-router.post('/',async (req,res)=> {
-    try{
-        const cart = await cartManager.createCart();
+router.post('/', authMiddleware, async (req, res) => {
+    try {
+        console.log('Usuario en sesión:', req.user);  // Asegúrate de que esto se muestra
 
-        console.log('Datos de la sesión después de crear el carrito:', req.session);
+        const userId = req.user.id;  // Usa `id` si lo guardaste así en la sesión
+        if (!userId) {
+            console.log('Sesión no válida o expirada');
+            return res.status(400).json({ message: 'User ID is required' });
+        }
 
-        res.json(cart);
-        console.log('Carrito creado');
-    }catch(error){
-        console.log('Error al crear el carrito');
-        res.status(500).json({error: error.message});
+        const cart = await cartManager.createCart(userId);
+        res.json({status: 'success', cartId: cart._id });  // Asegúrate de que esté respondiendo con el carrito
+        console.log('Carrito creado con éxito:', cart);
+    } catch (error) {
+        console.log('Error al crear el carrito:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 // ruta para view
-router.get('/carts/:cid', async (req,res)=>{
+/* router.get('/carts/:cid', async (req,res)=>{
     try{
         const cid = req.params.cid;
         console.log('ID del carrito:', cid);
@@ -70,18 +75,18 @@ router.get('/carts/:cid', async (req,res)=>{
         console.log('Error al obtener el carrito', error);
         res.status(500).json({ error: error.message });
     }
-});
+}); */
 
 router.get('/:cid', async (req,res)=>{
     try{
         const cid = req.params.cid;
         console.log(cid);
 
-        const productInCart = await cartManager.getCartById((cid));
+        const productInCart = await cartManager.getCartById(cid);
 
         if(productInCart){
-            console.log('Carrito encontrado');
-            res.json({payload: productInCart});
+            console.log('Carrito encontrado:', productInCart);
+            res.render('cart',{cart: productInCart.products, cid});
         }else {
             res.status(404).json({error: 'Carrito no encontrado'})
         }
@@ -91,7 +96,7 @@ router.get('/:cid', async (req,res)=>{
     }
 });
 
-router.post('/:cid/product/:pid',verifyToken, async (req, res) => {
+router.post('/:cid/products/:pid',authMiddleware, async (req, res) => {
     try {
         const { cid, pid } = req.params;
         const user = req.user;
@@ -118,7 +123,7 @@ router.post('/:cid/product/:pid',verifyToken, async (req, res) => {
         }
 
         const result = await cartManager.addProductToCart(cid, pid, user); // Asegúrate de pasar los parámetros correctos
-        res.json(result);
+        res.json({status: 'success',payload: result});
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -172,8 +177,8 @@ router.put('/:cid/product/:pid', async (req,res)=>{
         res.status(500).json({error: error.message});
     }
 })
-
-router.post('/:cid/purchase', handlePolicies('user'), async (req, res) => {
+// checkout
+router.post('/:cid/purchase', async (req, res) => {
     console.log('Sesión en middleware:', req.session.user);
     const cid = req.params.cid;
     console.log('Cart ID:', cid);
@@ -181,7 +186,26 @@ router.post('/:cid/purchase', handlePolicies('user'), async (req, res) => {
 
     try {
         const result = await cartManager.purchaseCart(cid,purchaserEmail );
-        res.json(result);
+
+        const ticket = {
+            code: result.ticket.code,
+            amount: result.ticket.amount,
+            purchaser: result.ticket.purchaser,
+            createdAt: result.ticket.createdAt.toISOString(), // Asegúrate de convertir a string si es necesario
+        };
+
+
+         // Si la compra es exitosa, renderizamos la vista de confirmación
+         if (result.ticket) {
+            console.log('Datos del ticket:', result.ticket);
+            res.render('checkout', {
+                ticket: ticket,
+                message: result.message,
+                failedProducts: result.failedProducts
+            });
+        } else {
+            res.status(400).json({ message: 'Error al procesar la compra' });
+        }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -193,15 +217,15 @@ router.get('/current',authMiddleware, async (req, res) => {
     try {
         const userId = req.user._id; // Asegúrate de que req.user tenga el ID del usuario
         console.log('ID del usuario:', userId); // Depuración
-        const cart = await cartManager.getCartById(userId); // Cambia esto si es necesario para buscar por usuario
+        const cart = await cartManager.getCartByUserId(userId); // Cambia esto si es necesario para buscar por usuario
 
         if (!cart) {
-            return res.status(404).json({ message: 'Carrito no encontrado' });
+            return res.status(404).json({ message: 'Carrito no encontrado para el usuario' });
         }
 
         res.json({ cartId: cart._id });
     } catch (error) {
-        console.error('Error al obtener el carrito:', error); // Depuración
+        console.error('Error al obtener el carrito:', error); 
         res.status(500).json({ message: 'Error al obtener el carrito' });
     }
 });

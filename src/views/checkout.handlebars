@@ -1,0 +1,25 @@
+<div></div>
+    <h1>¡Compra Completada!</h1>
+    <p>Gracias por tu compra. Aquí están los detalles de tu transacción:</p>
+
+    <h2>Detalles del Ticket:</h2>
+    <ul>
+        <li><strong>Código de Ticket:</strong> {{ticket.code}}</li>
+        <li><strong>Monto Total:</strong> ${{ticket.amount}}</li>
+        <li><strong>Comprador:</strong> {{ticket.purchaser}}</li>
+        <li><strong>Fecha de Compra:</strong> {{ticket.createdAt}}</li>
+    </ul>
+
+    {{#if failedProducts.length}}
+        <h2>Productos que fallaron al procesar:</h2>
+        <ul>
+            {{#each failedProducts}}
+                <li>{{this.title}} - Stock no disponible</li>
+            {{/each}}
+        </ul>
+    {{else}}
+        <p>Todos los productos fueron procesados exitosamente.</p>
+    {{/if}}
+
+    <a href="/api/products/products">Volver a los productos</a>
+</div>

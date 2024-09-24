@@ -28,13 +28,16 @@
 <div>
     <h1>Lista de productos</h1>
     <h3>Bienvenido, {{user.firstName}} {{user.lastName}} ({{user.role}})</h3>
-    <h3>Datos del usuario: {{user}}</h3>
     <form action="/api/auth/logout" method="get">
-    <button type="submit" class="btn btn-success">Salir</button>
+        <button type="submit" class="btn btn-success">Salir</button>
+    </form>
+    
+    <!-- Botón para crear carrito -->
+    <button id="create-cart-btn" class="btn btn-primary">Crear Carrito</button>
 
-    <button onclick="createCart()">Crear Carrito</button>
+    <!-- Botón para ver carrito -->
+    <button id="view-cart-btn" class="btn btn-success">Ver Carrito</button>
 
-</form>
     <ul class="list-group" id="product-list">
         {{#if products}}
             {{#each products}}
@@ -47,7 +50,7 @@
                     <p>Categoría: {{category}}</p>
                     <p>Stock: {{stock}}</p>
                     <p>ID: {{_id}}</p>
-                    <button onclick="addToCart('{{_id}}')">Agregar al carrito</button>
+                    <button class="add-to-cart-btn" data-product-id="{{_id}}">Agregar al carrito</button>
                 </li>
             {{/each}}
         {{else}}
@@ -70,53 +73,4 @@
     </div>
 </div>
 
-<script>
-
-    function getCartId() {
-    return fetch('/api/carts/current') // Asegúrate de que esta ruta devuelve el ID del carrito correctamente
-        .then(response => response.json())
-        .then(data => {
-            if (data.cartId && data.cartId.length === 24) {
-                return data.cartId;
-            } else {
-                throw new Error('ID del carrito inválido');
-            }
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-function addToCart(pid) {
-    getCartId().then(cid => {
-        if (cid) {
-            console.log('no entra al addtocart')
-            fetch(`/api/carts/${cid}/product/${pid}`, { method: 'POST' })
-                .then(response => response.json())
-                .then(data => alert(data.message))
-                .catch(error => console.error('Error:', error));
-        } else {
-            console.error('Carrito no encontrado');
-        }
-    });
-}
-
-
-  function createCart() {
-    fetch('/api/carts', { method: 'POST' })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al crear el carrito');
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert('Carrito creado con éxito');
-            // Aquí podrías actualizar el UI o hacer alguna acción
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            if (error.message === 'Sesión no válida o expirada') {
-                window.location.href = '/login'; // Redirige solo si es necesario
-            }
-        });
-}
-</script>
+<script src="/static/js/products.js"></script>

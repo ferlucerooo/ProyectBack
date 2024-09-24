@@ -1,8 +1,9 @@
 import { Router } from "express";
 import config from '../config.js'
 import ProductManagerDB from "../controllers/productManager.db.js";
-import { verifyToken, handlePolicies,verifyMongoDBId} from "../services/utils.js";
+import { verifyToken, handlePolicies,verifyMongoDBId, authMiddleware} from "../services/utils.js";
 import {generateMockProducts} from '../services/mocking.js'
+
 
 const router = Router ();
 const productManager = ProductManagerDB.getInstance();
@@ -12,18 +13,22 @@ router.param('id', verifyMongoDBId());
 
 router.get('/products', async (req,res)=>{
     try{
+        
+        const user = req.session.user;
+        console.log('Usuario en sesión al acceder a productos:', user); 
         const limit = parseInt(req.query.limit) || 5;
         const page = parseInt(req.query.page) || 1;
         const sort = req.query.sort === 'asc' ? 1 : req.query.sort === 'des' ? -1 : null;
         const owner = req.query.owner || null;
         const query = req.query.query ? JSON.parse(req.query.query) : {}; // Consulta adicional
         const category = req.query.category ? { category: req.query.category } : {}; // Filtro por categoría
-    
+
+       
 
         const result = await productManager.getProducts(limit, page, sort, query,category, owner);
         /* console.log(result); */
         res.render('products', {
-            user: req.session.user,
+            user: user,
             products: result.docs,
             totalPages: result.totalPages,
             currentPage: result.page,

@@ -6,12 +6,6 @@ import CustomError from './errors.js';
 export const createHash = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10));
 
 export const isValidPassword = (passwordToVerify, storedHash) => bcrypt.compareSync(passwordToVerify, storedHash);
-/* export const isValidPassword = (passwordToVerify, storedHash) => {
-    if (!passwordToVerify || !storedHash) {
-        throw new Error('Password and hash are required for comparison');
-    }
-    return bcrypt.compareSync(passwordToVerify, storedHash);
-}; */
 
 export const createToken = (payload, duration) => jwt.sign(payload, config.SECRET, { expiresIn: duration });
 
@@ -91,25 +85,17 @@ export const errorsHandler = (error, req, res, next) => {
 }
 
 export function authMiddleware(req, res, next) {
-    // Simulación de autenticación: reemplaza con tu lógica real
-    const token = req.headers['authorization'];
-    if (!token) {
-        return res.status(401).json({ error: 'No autorizado' });
+    console.log('Middleware ejecutado. Usuario en sesión:', req.session.user);
+
+    // Verifica si existe la sesión del usuario
+    if (req.session && req.session.user) {
+        req.user = req.session.user;  // Asigna el usuario autenticado a req.user
+        return next();
     }
 
-    // Verificación y extracción del usuario del token
-    // Ejemplo:
-    // const user = await User.findByToken(token);
-    const user = { _id: 'someUserId', role: 'user' }; // Simulación
-
-    if (!user) {
-        return res.status(401).json({ error: 'Usuario no autenticado' });
-    }
-
-    req.user = user;
-    next();
+    console.log('Sesión no válida o expirada');
+    res.status(401).json({ error: 'No autorizado' });
 }
-
 
 
 /* function authMiddleware(req, res, next) {

@@ -81,7 +81,7 @@ router.post('/login', verifyRequiredBody(['email', 'password']), async (req, res
     try {
         const { email, password } = req.body;
         const foundUser = await manager.getOne({ email: email });
-        console.log('Usuario encontrado:', foundUser);
+        //console.log('Usuario encontrado:', foundUser);
 
         if (foundUser && isValidPassword(password, foundUser.password)) {
             // Actualiza el último inicio de sesión
@@ -97,13 +97,19 @@ router.post('/login', verifyRequiredBody(['email', 'password']), async (req, res
                 role: foundUser.role
             };
 
+            req.session.save((err) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Error al guardar la sesión' });
+                }
 
-            const { password: userPassword, ...userData } = foundUser;
-            const token = createToken(userData, '1h');
-            res.status(200).json({ origin: config.SERVER, payload: 'Usuario autenticado',token });
-
-            // Renderiza la vista de productos
-            //res.render('/api/products/products', { user: req.session.user, token: token });
+                // Redirige a la vista de productos
+                res.redirect('/api/products/products');
+            });
+           /*  const { password: userPassword, ...userData } = foundUser;
+            const token = createToken(userData, '1h'); */
+           
+            console.log('Sesión establecida:', req.session.user);
+           
         } else {
             res.status(401).json({ error: 'Datos de acceso no válidos' });
         }
@@ -160,7 +166,7 @@ router.get('/ghlogincallback', passport.authenticate('ghlogin', {failureRedirect
                 if (err) {
                     return res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
                 }
-                res.redirect('/profile');
+                res.redirect('/api/products/products');
             });
         } else {
             res.redirect('/login');
