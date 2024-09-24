@@ -36,7 +36,7 @@ import uploadRouter from './routes/uploads.routes.js'
 
 
 
-if(cluster.isPrimary){
+/* if(cluster.isPrimary){
      // Inicializando cluster de 8 instancias
      for (let i = 0; i < cpus().length; i++) cluster.fork();
 
@@ -44,7 +44,7 @@ if(cluster.isPrimary){
          console.log(`Se cayó la instancia ${worker.process.pid}`);
          cluster.fork();
         });
-}else{
+}else{ */
     try{    
         const app = express ();
         const fileStorage = FileStore(session);
@@ -130,5 +130,5 @@ app.use('/api/docs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
 
     console.log(`Error starting app (${error.message})`);
     }
-}
+/* } */
 
