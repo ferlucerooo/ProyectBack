@@ -157,17 +157,41 @@ router.get('/ghlogin', passport.authenticate('ghlogin', {scope: ['user']}), asyn
 
 //login github
 router.get('/ghlogincallback', passport.authenticate('ghlogin', {failureRedirect: `/login?error=${encodeURI('Error al identificar con Github')}`}), async (req, res) => {
+    
     try {
         if (req.user) {
-            req.session.user = req.user;
-            req.session.login_type = 'GitHub';
-            console.log('GitHub user data:', req.user);
-            req.session.save(err => {
-                if (err) {
-                    return res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
-                }
-                res.redirect('/api/products/products');
-            });
+            // Verifica si el usuario existe en la base de datos
+            const foundUser = await manager.getOne({ email: req.user.email });
+
+            if (foundUser) {
+                // Actualiza el último inicio de sesión
+                foundUser.lastConnection = new Date();
+                await manager.update({ email: foundUser.email }, { lastConnection: foundUser.lastConnection });
+
+                // Establece la sesión del usuario
+                req.session.user = {
+                    id: foundUser.id,
+                    firstName: foundUser.firstName,
+                    lastName: foundUser.lastName,
+                    email: foundUser.email,
+                    role: foundUser.role
+                };
+
+                req.session.login_type = 'GitHub'; // Indica que el login es con GitHub
+
+                console.log('GitHub user data:', req.user);
+
+                // Guarda la sesión antes de redirigir
+                req.session.save(err => {
+                    if (err) {
+                        return res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+                    }
+                    res.redirect('/api/products/products');
+                });
+            } else {
+                // Si no se encuentra el usuario, redirige al login
+                res.redirect('/login');
+            }
         } else {
             res.redirect('/login');
         }
