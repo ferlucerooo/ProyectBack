@@ -8,7 +8,9 @@
     "dev": "nodemon --env-file .env src/app",
     "prod": "node --env-file .env.prod src/app",
     "supertest": "mocha test/sessionSuper.test.js",
-    "test": "mocha test/userManager.test.js"
+    "test": "mocha test/userManager.test.js",
+    "start": "node src/app.js"
+    
   },
   "keywords": [],
   "author": "",
