@@ -73,7 +73,12 @@ import uploadRouter from './routes/uploads.routes.js'
     app.use(passport.session());
     
 // motor de plantillas
-    app.engine('handlebars', handlebars.engine());
+    app.engine('handlebars', handlebars.engine({
+        defaultLayout: 'main',  // Esto es opcional, depende de tu configuración actual
+    helpers: {
+        eq: (arg1, arg2) => arg1 == arg2
+    }
+    }));
     app.set('views', `${config.DIRNAME}/views`);
     app.set('view engine','handlebars');
 //Rutas

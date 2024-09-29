@@ -1,9 +1,10 @@
 import { Router } from 'express';
-
 import config from '../config.js';
 import UsersManager from '../controllers/usersManager.db.js';
 import { verifyRequiredBody, verifyToken, handlePolicies } from '../services/utils.js';
 import { uploader } from '../services/uploader.js';
+import moment from 'moment';
+import nodemailer from 'nodemailer';
 
 const router = Router();
 const manager = new UsersManager();
@@ -24,6 +25,21 @@ router.get('/aggregate/:role', async (req, res) => {
         res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
     }
 });
+//todos los user
+router.get('/', async (req, res) => {
+    try {
+        const users = await manager.getAll();
+        const filteredUsers = users.map(user => ({
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            role: user.role
+        }));
+        res.status(200).json({ origin: config.SERVER, payload: filteredUsers });
+    } catch (err) {
+        res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+    }
+});
+
 
 router.get('/paginate/:page/:limit', async (req, res) => {
     try {
@@ -59,7 +75,70 @@ router.put('/:id', async (req, res) => {
         res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
     }
 });
+//elimina los user despues de 2 dias sin coneccion
+router.delete('/', async (req, res) => {
+    try {
+        const twoDaysAgo = moment().subtract(2, 'days').toDate(); // Cambia 'days' por 'minutes' para pruebas
+        const inactiveUsers = await usersModel.find({ lastConnection: { $lt: twoDaysAgo } }).lean();
 
+        if (inactiveUsers.length === 0) {
+            return res.status(200).json({ message: 'No hay usuarios inactivos para eliminar.' });
+        }
+
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: config.GMAIL_APP_USER,
+                pass: config.GMAIL_APP_PASS,
+            },
+        });
+
+        for (const user of inactiveUsers) {
+            // Eliminar usuario
+            await manager.delete({ _id: user._id });
+
+            // Enviar correo de notificación
+            await transporter.sendMail({
+                to: user.email,
+                from: `Sistema Coder <${config.GMAIL_APP_USER}>`,
+                subject: 'Cuenta eliminada por inactividad',
+                html: `<p>Estimado ${user.firstName},</p>
+                       <p>Tu cuenta ha sido eliminada debido a la inactividad de más de 2 días.</p>`,
+            });
+        }
+
+        res.status(200).json({ message: `Se eliminaron ${inactiveUsers.length} usuarios inactivos.` });
+    } catch (err) {
+        res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+    }
+});
+
+//ruta para modificar el rol y eliminar user solo para admin
+
+router.get('/admin',handlePolicies('admin'), async (req, res) => {
+    try {
+        // Verifica si el usuario es un administrador
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Acceso denegado: Solo los administradores pueden acceder a esta vista.' });
+        }
+
+        const users = await manager.getAll();
+        const filteredUsers = users.map(user => ({
+            id: user._id,
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            role: user.role
+        }));
+
+        // Renderizar la vista de administración de usuarios
+        res.render('users', { users: filteredUsers });
+    } catch (err) {
+        res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+    }
+});
+
+
+//eliminar user
 router.delete('/:id', async (req, res) => {
     try {
         const filter = { _id: req.params.id };
@@ -127,6 +206,39 @@ router.post('/premium/:uid', async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+// ruta para actualizar el rol del user en la view
+router.put('/:id/role', async (req, res) => {
+
+    try {
+        const { role } = req.body;
+        
+        // Verifica si el rol es válido
+        if (!['user', 'premium', 'admin'].includes(role)) {
+            return res.status(400).json({ message: 'Rol inválido' });
+        }
+
+        const updatedUser = await manager.update({ _id: req.params.id }, { role });
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        console.log('Usuario actualizado:', updatedUser); // Agrega este log para depuración
+        res.status(200).json({ message: 'Rol actualizado correctamente', user: updatedUser });
+    } catch (err) {
+        console.error('Error al actualizar el rol:', err); // Agrega este log para depuración
+        res.status(500).send({ message: err.message });
+    }
+
+   /*  try {
+        const { role } = req.body;
+        const updatedUser = await manager.update({ _id: req.params.id }, { role });
+        res.status(200).json({ message: 'Rol actualizado correctamente', user: updatedUser });
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    } */
+});
+
+
 
 router.put('/role/:id', verifyToken, handlePolicies('admin'), async (req, res) => {
     try {
