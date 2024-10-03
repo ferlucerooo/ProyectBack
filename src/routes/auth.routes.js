@@ -59,6 +59,7 @@ router.get('/hash/:password', async (req, res) => {
 router.post('/register', verifyRequiredBody(['firstName', 'lastName', 'email', 'password']), async (req, res) => {
     try {
         const { firstName, lastName, email, password } = req.body;
+        console.log("Email recibido:", email);
         const foundUser = await manager.getOne({ email: email });
 
         // Si NO se encuentra ya registrado el email, continuamos y creamos
@@ -70,6 +71,7 @@ router.post('/register', verifyRequiredBody(['firstName', 'lastName', 'email', '
             res.status(400).send({ origin: config.SERVER, payload: 'El email ya se encuentra registrado' });
         }
     } catch (err) {
+        console.error('Error during registration:', err);
         res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
     }
 });
@@ -94,9 +96,10 @@ router.post('/login', verifyRequiredBody(['email', 'password']), async (req, res
                 firstName: foundUser.firstName,
                 lastName: foundUser.lastName,
                 email: foundUser.email,
-                role: foundUser.role
+                role: foundUser.role,
+                lastConnection: foundUser.lastConnection
             };
-
+            
             req.session.save((err) => {
                 if (err) {
                     return res.status(500).json({ error: 'Error al guardar la sesión' });
@@ -157,6 +160,28 @@ router.get('/ghlogin', passport.authenticate('ghlogin', {scope: ['user']}), asyn
 
 //login github
 router.get('/ghlogincallback', passport.authenticate('ghlogin', {failureRedirect: `/login?error=${encodeURI('Error al identificar con Github')}`}), async (req, res) => {
+    try {
+        if (req.user) {
+            req.session.user = req.user;
+            req.session.login_type = 'GitHub';
+            console.log('GitHub user data:', req.user);
+            req.session.save(err => {
+                if (err) {
+                    return res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+                }
+                res.redirect('/profile');
+            });
+        } else {
+            res.redirect('/login');
+        }
+    } catch (err) {
+        res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
+    }
+});
+
+
+
+/* router.get('/ghlogincallback', passport.authenticate('ghlogin', {failureRedirect: `/login?error=${encodeURI('Error al identificar con Github')}`}), async (req, res) => {
     
     try {
         if (req.user) {
@@ -198,7 +223,7 @@ router.get('/ghlogincallback', passport.authenticate('ghlogin', {failureRedirect
     } catch (err) {
         res.status(500).send({ origin: config.SERVER, payload: null, error: err.message });
     }
-});
+}); */
 
 router.get('/logout', async (req, res) => {
     try {

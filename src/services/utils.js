@@ -96,20 +96,3 @@ export function authMiddleware(req, res, next) {
     console.log('Sesión no válida o expirada');
     res.status(401).json({ error: 'No autorizado' });
 }
-
-
-/* function authMiddleware(req, res, next) {
-    if (req.session && req.session.userId) {
-        req.user = { _id: req.session.userId }; // Extrae el ID del usuario de la sesión
-        return next();
-    } else {
-        return res.redirect('/login'); // Redirige al login si la sesión no es válida
-    }
-} */
-
-/* function authMiddleware(req, res, next) {
-    // Lógica de autenticación
-    // Aquí deberías obtener el ID real del usuario, por ejemplo, de un token JWT
-    req.user = { _id: 'someUserId' }; // Reemplaza con el ID real del usuario obtenido
-    next();
-} */

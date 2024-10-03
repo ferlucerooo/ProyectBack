@@ -1,26 +1,29 @@
 <table>
     <thead>
         <tr>
+            <th>ID</th>
             <th>Nombre</th>
             <th>Email</th>
             <th>Rol</th>
+            <th>Última Coneccion</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
         {{#each users}}
         <tr>
+            <td>{{this.id}}</td>
             <td>{{this.name}}</td>
             <td>{{this.email}}</td>
             <td>
-                <select id="role-{{this.id}}">
+                <select id="role-{{this.id}}" onchange="updateRole('{{this.id}}')">
                     <option value="user" {{#if (eq this.role 'user')}}selected{{/if}}>User</option>
                     <option value="premium" {{#if (eq this.role 'premium')}}selected{{/if}}>Premium</option>
                     <option value="admin" {{#if (eq this.role 'admin')}}selected{{/if}}>Admin</option>
                 </select>
             </td>
+            <td>{{this.lastconnection}}</td>
             <td>
-                <button onclick="updateRole('{{this.id}}')">Actualizar Rol</button>
                 <button onclick="deleteUser('{{this.id}}')">Eliminar</button>
             </td>
         </tr>
@@ -28,46 +31,4 @@
     </tbody>
 </table>
 
-<script>
-    async function updateRole(userId) {
-        const role = document.getElementById(`role-${userId}`).value;
-        try {
-            const response = await fetch(`/api/users/${userId}/role`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role })
-            });
-
-            if (response.ok) {
-                alert('Rol actualizado correctamente');
-            } else {
-                const errorData = await response.json();
-                console.error('Error al actualizar el rol:', errorData);
-                alert(`Error al actualizar el rol: ${errorData.message || 'Error desconocido'}`);
-            }
-        } catch (error) {
-            console.error('Error en la solicitud:', error);
-            alert(`Error en la solicitud: ${error.message}`);
-        }
-    }
-
-    async function deleteUser(userId) {
-        try {
-            const response = await fetch(`/api/users/${userId}`, {
-                method: 'DELETE'
-            });
-
-            if (response.ok) {
-                alert('Usuario eliminado correctamente');
-                location.reload();  // Recarga la página para actualizar la lista de usuarios
-            } else {
-                const errorData = await response.json();
-                console.error('Error al eliminar el usuario:', errorData);
-                alert(`Error al eliminar el usuario: ${errorData.message || 'Error desconocido'}`);
-            }
-        } catch (error) {
-            console.error('Error en la solicitud:', error);
-            alert(`Error en la solicitud: ${error.message}`);
-        }
-    }
-</script>
+<script src="/static/js/users.js"></script>

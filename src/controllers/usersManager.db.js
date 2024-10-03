@@ -47,10 +47,10 @@ class UsersManager {
         }; */
         try {
             const user = await usersModel.findOne(filter).lean();
-            if (!user) throw new Error('Usuario no encontrado');
+            if (!user) return null;
             return new UserDTO(user);
         } catch (err) {
-            throw err.message;
+            throw new Error('Error al buscar usuario: ' + err.message);
         }
 
 
@@ -93,22 +93,68 @@ class UsersManager {
         }; */
     };
 
-    update = async (filter, update) => {
-       /*  try {
+    update = async (filter, update, options) => {
+        /* try {
             const user = await usersModel.findOneAndUpdate(filter, update, options).lean();
             return user ? new UserDTO(user) : null;
         } catch (err) {
             return err.message;
         }; */
-        try {
+       /*  try {
+            console.log('Query:', filter);
+                    console.log('Update Data:', update);
             const user = await usersModel.findOneAndUpdate(filter, update, { new: true }).lean();
             if (!user) throw new Error('Usuario no encontrado');
             return new UserDTO(user);
         } catch (err) {
             throw err.message;
-        }
+        } */
 
+           /*  try {
+                // Encuentra y actualiza el usuario, devolviendo el documento actualizado
+                console.log('Filter recibido en update:', filter);
+                const user = await usersModel.findOneAndUpdate(filter, update, { new: true }).lean();
+                
+                // Si no se encuentra el usuario, lanzar un error
+                if (!user) throw new Error('Usuario no encontrado');
+                
+                // Retorna el usuario actualizado usando el UserDTO
+                return new UserDTO(user);
+            } catch (err) {
+                // Imprimir el error para depurar
+                console.error('Error al actualizar el usuario:', err);
+                
+                // Volver a lanzar el error para que pueda ser manejado en el controlador
+                throw new Error(err.message || 'Error desconocido al actualizar el usuario');
+            } */
 
+                /* try {
+                    // Verifica que query tenga el formato correcto
+                    console.log('Query:', query);
+                    console.log('Update Data:', updateData);
+            
+                    // Actualiza el usuario basado en el query y el updateData
+                    const updatedUser = await usersModel.findByIdAndUpdate(query._id, updateData, { new: true });
+            
+                    return new UserDTO(updatedUser);
+                } catch (error) {
+                    console.error('Error al actualizar el usuario:', error);
+                    throw error; // Asegúrate de lanzar el error para manejarlo en la ruta
+                } */
+
+                    try {
+                        // Encuentra y actualiza el usuario, devolviendo el documento actualizado
+                        const user = await usersModel.findOneAndUpdate(filter, update, { new: true }).lean();
+                        
+                        // Si no se encuentra el usuario, lanzar un error
+                        if (!user) throw new Error('Usuario no encontrado');
+                        
+                        // Retorna el usuario actualizado usando el UserDTO
+                        return new UserDTO(user);
+                    } catch (err) {
+                        console.error('Error al actualizar el usuario:', err);
+                        throw new Error(err.message || 'Error desconocido al actualizar el usuario');
+                    }
     };
 
     delete = async (filter) => {
@@ -177,15 +223,15 @@ class UsersManager {
 
         return true;
     };
-    async update(filter, update) {
+   /*  async update(filter, update) {
         try {
             // Utiliza el método de Mongoose `findOneAndUpdate` para actualizar un documento
-            const updatedUser = await UserModel.findOneAndUpdate(filter, update, { new: true });
+            const updatedUser = await usersModel.findOneAndUpdate(filter, update, { new: true });
             return updatedUser;
         } catch (error) {
             throw new Error(`Error al actualizar el usuario: ${error.message}`);
         }
-    }
+    } */
 }
 
 

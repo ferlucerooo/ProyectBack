@@ -5,6 +5,8 @@ import { verifyRequiredBody, verifyToken, handlePolicies } from '../services/uti
 import { uploader } from '../services/uploader.js';
 import moment from 'moment';
 import nodemailer from 'nodemailer';
+import mongoose from 'mongoose';
+import usersModel from '../models/users.model.js'
 
 const router = Router();
 const manager = new UsersManager();
@@ -30,6 +32,7 @@ router.get('/', async (req, res) => {
     try {
         const users = await manager.getAll();
         const filteredUsers = users.map(user => ({
+            id: user.id,
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
             role: user.role
@@ -113,23 +116,25 @@ router.delete('/', async (req, res) => {
     }
 });
 
-//ruta para modificar el rol y eliminar user solo para admin
+//ruta para modificar el rol, eliminar user solo para admin y view de users
 
 router.get('/admin',handlePolicies('admin'), async (req, res) => {
     try {
         // Verifica si el usuario es un administrador
-        if (req.user.role !== 'admin') {
+        /* if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Acceso denegado: Solo los administradores pueden acceder a esta vista.' });
-        }
+        } */
 
         const users = await manager.getAll();
         const filteredUsers = users.map(user => ({
-            id: user._id,
+            id: user.id,
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
-            role: user.role
+            role: user.role,
+            lastconnection: user.lastConnection
         }));
-
+        console.log("user admin log ", filteredUsers);
+        
         // Renderizar la vista de administración de usuarios
         res.render('users', { users: filteredUsers });
     } catch (err) {
@@ -207,55 +212,64 @@ router.post('/premium/:uid', async (req, res) => {
     }
 });
 // ruta para actualizar el rol del user en la view
-router.put('/:id/role', async (req, res) => {
+/* router.put('/:id/role', async (req, res) => {
 
     try {
-        const { role } = req.body;
-        
-        // Verifica si el rol es válido
-        if (!['user', 'premium', 'admin'].includes(role)) {
-            return res.status(400).json({ message: 'Rol inválido' });
+        const userId = req.params.id; // Obtén solo el ID
+        const { role } = req.body; // Obtén el rol del cuerpo de la solicitud
+        console.log('Rol a actualizar:', role);
+        console.log('ID del usuario:', userId);
+
+        // Verificar que el ID esté presente
+        if (!userId) {
+            return res.status(400).json({ message: 'Falta el ID del usuario' });
         }
 
-        const updatedUser = await manager.update({ _id: req.params.id }, { role });
+        // Asegurarse de que el ID sea un ObjectId válido antes de usarlo
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: 'ID del usuario no válido' });
+        }
+        console.log('Filtro que se enviará:', { _id: userId }); // Imprime el filtro que se va a enviar
+        console.log('Datos a actualizar:', { role });   
+        const updatedUser = await manager.update({ userId }, { role });
         if (!updatedUser) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        console.log('Usuario actualizado:', updatedUser); // Agrega este log para depuración
         res.status(200).json({ message: 'Rol actualizado correctamente', user: updatedUser });
-    } catch (err) {
+    }   catch (err) {
         console.error('Error al actualizar el rol:', err); // Agrega este log para depuración
         res.status(500).send({ message: err.message });
     }
 
-   /*  try {
-        const { role } = req.body;
-        const updatedUser = await manager.update({ _id: req.params.id }, { role });
-        res.status(200).json({ message: 'Rol actualizado correctamente', user: updatedUser });
-    } catch (err) {
-        res.status(500).send({ message: err.message });
-    } */
 });
+ */
 
 
+router.put('/role/:id', async (req, res) => {
+    const { role } = req.body; // Obtenemos el rol del cuerpo de la solicitud
+    const id = req.params.id; // Obtenemos el ID de los parámetros de la solicitud
 
-router.put('/role/:id', verifyToken, handlePolicies('admin'), async (req, res) => {
+    console.log('ID recibido:', id); // Para depuración
+    console.log('Rol recibido:', role); // Para depuración
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).send({ error: 'ID inválido' });
+    }
+
     try {
-        const { id } = req.params;
-        const { role } = req.body;
-
-        if (role !== 'user' && role !== 'premium') {
+        if (role !== 'user' && role !== 'premium' && role !== 'admin') {
             return res.status(400).send({ origin: config.SERVER, payload: null, error: 'Rol inválido' });
         }
 
-        const updatedUser = await manager.update({ _id: id }, { role });
+        // Actualiza el usuario con el nuevo rol
+        const updatedUser = await manager.update({ _id: id },{role: role}); // Usa el id correcto
 
         if (!updatedUser) {
             return res.status(404).send({ origin: config.SERVER, payload: null, error: 'Usuario no encontrado' });
         }
 
-        res.status(200).send({ origin: config.SERVER, payload: updatedUser });
+        res.status(200).send({ origin: config.SERVER, payload: updatedUser, message: 'Rol actualizado correctamente' });
     } catch (error) {
         console.log('Error al actualizar el rol del usuario', error);
         res.status(500).send({ origin: config.SERVER, payload: null, error: error.message });
